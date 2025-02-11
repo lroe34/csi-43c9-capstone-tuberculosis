@@ -31,6 +31,7 @@ def main(request):
     """
     global model
 
+
     if model is None:
         bucket_name = "tb-model-bucket" 
         file_name = "model.pkl" 
