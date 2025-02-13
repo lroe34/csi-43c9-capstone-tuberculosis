@@ -18,23 +18,24 @@ const Signup = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: handle signup logic
     console.log("Form submitted:", formData);
     router.push("/home");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8F6F2]">
-      <div className="bg-white shadow-lg rounded-lg flex max-w-4xl w-full p-6">
-        <div className="hidden md:flex flex-1 justify-center items-center">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="flex w-full max-w-5xl items-center">
+        <div className="flex-1 flex justify-end pr-10">
           <img
             src="/signup-image.jpg"
             alt="Doctor and patient"
-            className="w-[80%] rounded-lg"
+            className="w-[100%] rounded-lg"
           />
         </div>
-        <div className="flex-1 px-8">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-6">Sign Up</h2>
+        <div className="flex-1 max-w-md">
+          <h2 className="text-4xl font-semibold text-gray-800 mb-6 text-center">
+            Sign Up
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-gray-600">Full Name</label>
@@ -92,7 +93,7 @@ const Signup = () => {
               Already a user?{" "}
               <button
                 onClick={() => router.push("/login")}
-                className="text-black font-semibold"
+                className="font-semibold"
               >
                 Log in
               </button>
@@ -100,7 +101,6 @@ const Signup = () => {
             <p className="mt-2">or</p>
             <button
               onClick={() => router.push("/home")}
-              // TODO: do something here for different guest home
               className="font-semibold"
             >
               Continue as guest
