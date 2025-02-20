@@ -1,37 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
   MagnifyingGlassIcon,
   ChartPieIcon,
   Cog6ToothIcon,
   ArrowLeftEndOnRectangleIcon,
+  BeakerIcon,
+  ScaleIcon,
 } from "@heroicons/react/24/outline";
 
 const sidebarItems = [
   { name: "Home", icon: HomeIcon, path: "/home" },
   { name: "Search", icon: MagnifyingGlassIcon, path: "/search" },
-  { name: "Diagnose", icon: ChartPieIcon, path: "/diagnose" },
-  { name: "Results", icon: ChartPieIcon, path: "/results" },
+  { name: "Diagnose", icon: ScaleIcon, path: "/diagnose" },
+  { name: "Results", icon: BeakerIcon, path: "/results" },
   { name: "Settings", icon: Cog6ToothIcon, path: "/settings" },
 ];
 
 const Sidebar = () => {
   const router = useRouter();
-  const [active, setActive] = useState("Home");
+  const pathname = usePathname();
 
-  const handleNavigation = (path, name) => {
-    setActive(name);
+  const handleNavigation = (path) => {
     router.push(path);
   };
 
   const handleLogout = () => {
-    //TODO: this
     console.log("Logging out...");
-
-    router.push("/");
+    router.push("/login");
   };
 
   return (
@@ -39,13 +37,15 @@ const Sidebar = () => {
       <nav className="flex-1 flex flex-col space-y-8 mt-6">
         {sidebarItems.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.path;
+
           return (
             <button
               key={item.name}
-              onClick={() => handleNavigation(item.path, item.name)}
+              onClick={() => handleNavigation(item.path)}
               className={`p-3 rounded-lg flex items-center justify-center transition-all duration-200 
               ${
-                active === item.name
+                isActive
                   ? "text-yellow-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
