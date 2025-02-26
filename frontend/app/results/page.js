@@ -1,8 +1,11 @@
-export default function Results() {
+import Card from "@/components/Card";
+
+export default function DiagnosisPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Results</h1>
-      <p></p>
+    <div className="space-y-4">
+      <Card title="Outcome" />
+      <Card title="Recommendations for Further Actions" />
+      <Card title="Resources for Medical Help" />
     </div>
   );
 }
