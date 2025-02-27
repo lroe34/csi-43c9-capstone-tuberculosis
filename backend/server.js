@@ -10,7 +10,7 @@ const app = express();
 
 app.use(express.json());
 
-const allowedOrigins = ["http://localhost:3000", process.env.FRONTEND_URL];
+const allowedOrigins = ["http://localhost:3000", process.env.NEXT_PUBLIC_API_URL];
 
 app.use(
   cors({
