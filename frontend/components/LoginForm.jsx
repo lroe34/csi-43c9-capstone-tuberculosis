@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import API_URL from "../utils/api.js";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -13,16 +14,12 @@ export default function LoginForm() {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:5001/api/users/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axios.post(`${API_URL}/api/users/login`, {
+        email,
+        password,
+      });
 
       console.log("Login successful:", response.data);
-
       router.push("/home");
     } catch (error) {
       console.error("Error during login", error.response?.data || error);

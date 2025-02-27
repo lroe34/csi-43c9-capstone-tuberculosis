@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import API_URL from "../utils/api.js";
 
 const Signup = () => {
   const router = useRouter();
@@ -27,7 +28,7 @@ const Signup = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/users/signup",
+        `${API_URL}/api/users/signup`,
         formData
       );
 
