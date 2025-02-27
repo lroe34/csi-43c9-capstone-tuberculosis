@@ -10,12 +10,23 @@ const app = express();
 
 app.use(express.json());
 
-const allowedOrigins = ["http://localhost:3000", process.env.NEXT_PUBLIC_API_URL];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://csi-43c9-capstone-tuberculosis-steel.vercel.app",
+];
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS policy does not allow this origin"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // pls cooperate wth me :(
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -26,6 +37,8 @@ mongoose
   })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
+
+app.options("*", cors());
 
 app.use("/api/users", usersRoute);
 
