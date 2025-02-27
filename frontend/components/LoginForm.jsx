@@ -2,16 +2,29 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import API_URL from "../utils/api.js";
 
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login submitted:", { email, password });
-    router.push("/home");
+
+    try {
+      const response = await axios.post(`${API_URL}/api/users/login`, {
+        email,
+        password,
+      });
+
+      console.log("Login successful:", response.data);
+      router.push("/home");
+    } catch (error) {
+      console.error("Error during login", error.response?.data || error);
+      alert(error.response?.data?.message || "An error occurred");
+    }
   };
 
   return (

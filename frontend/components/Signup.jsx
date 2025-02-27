@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import API_URL from "../utils/api.js";
 
 const Signup = () => {
   const router = useRouter();
@@ -16,10 +18,27 @@ const Signup = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    router.push("/home");
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/users/signup`,
+        formData
+      );
+
+      console.log("User signed up:", response.data);
+
+      router.push("/home");
+    } catch (error) {
+      console.error("Error during signup", error.response?.data || error);
+      alert(error.response?.data?.message || "An error occurred");
+    }
   };
 
   return (
