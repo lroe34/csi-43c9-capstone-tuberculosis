@@ -14,7 +14,6 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://csi-43c9-capstone-tuberculosis-steel.vercel.app",
 ];
- 
 
 app.use(
   cors({
