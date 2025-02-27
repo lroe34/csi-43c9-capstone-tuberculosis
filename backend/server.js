@@ -2,14 +2,22 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const usersRoute = require("./routes/users"); 
+const usersRoute = require("./routes/users");
 
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+
+const allowedOrigins = ["http://localhost:3000", process.env.FRONTEND_URL];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
 mongoose
   .connect(process.env.MONGO_URI, {
