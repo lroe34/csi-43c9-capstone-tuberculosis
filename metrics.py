@@ -53,6 +53,7 @@ class Metrics:
     print(metrics_reg.get_report())
     metrics_reg.visualize(plot_type='residuals')
     """
+    
     def __init__(self):
         self.metrics = {}
         self.y_true = None
@@ -112,6 +113,17 @@ class Metrics:
             self.metrics['f1'] = f1_score(self.y_true, self.y_pred, average='binary')
             self.metrics['mcc'] = matthews_corrcoef(self.y_true, self.y_pred)
             
+            cm = confusion_matrix(self.y_true, self.y_pred)
+            tn, fp, fn, tp = cm.ravel()
+            sensitivity = tp / (tp + fn)
+            specificity = tn / (tn + fp)
+            self.metrics['sensitivity'] = sensitivity
+            self.metrics['specificity'] = specificity
+            
+            acc = self.metrics['accuracy']
+            d_index = np.log2(1 + acc) + np.log2(1 + (sensitivity + specificity) / 2)
+            self.metrics['d_index'] = d_index
+            
             if self.y_prob is not None:
                 prob_scores = self.y_prob[:, 1] if self.y_prob.ndim > 1 else self.y_prob
                 self.metrics['roc_auc'] = roc_auc_score(self.y_true, prob_scores)
@@ -125,6 +137,32 @@ class Metrics:
             self.metrics['precision_weighted'] = precision_score(self.y_true, self.y_pred, average='weighted')
             self.metrics['recall_weighted'] = recall_score(self.y_true, self.y_pred, average='weighted')
             self.metrics['f1_weighted'] = f1_score(self.y_true, self.y_pred, average='weighted')
+            
+            cm = confusion_matrix(self.y_true, self.y_pred)
+            n_classes = cm.shape[0]
+            sensitivities = []
+            specificities = []
+            
+            for i in range(n_classes):
+                tp = cm[i, i]
+                fn = np.sum(cm[i, :]) - tp
+                fp = np.sum(cm[:, i]) - tp
+                tn = np.sum(cm) - tp - fp - fn
+                
+                sens_i = tp / (tp + fn) if (tp + fn) > 0 else 0
+                spec_i = tn / (tn + fp) if (tn + fp) > 0 else 0
+                
+                sensitivities.append(sens_i)
+                specificities.append(spec_i)
+            
+            avg_sensitivity = np.mean(sensitivities)
+            avg_specificity = np.mean(specificities)
+            self.metrics['sensitivity_macro'] = avg_sensitivity
+            self.metrics['specificity_macro'] = avg_specificity
+            
+            acc = self.metrics['accuracy']
+            d_index = np.log2(1 + acc) + np.log2(1 + (avg_sensitivity + avg_specificity) / 2)
+            self.metrics['d_index'] = d_index
             
             if self.y_prob is not None:
                 self.metrics['log_loss'] = log_loss(self.y_true, self.y_prob)
