@@ -129,6 +129,7 @@ class Metrics:
                 self.metrics['roc_auc'] = roc_auc_score(self.y_true, prob_scores)
                 self.metrics['log_loss'] = log_loss(self.y_true, prob_scores)
                 self.metrics['average_precision'] = average_precision_score(self.y_true, prob_scores)
+                self.metrics['categorical_crossentropy'] = log_loss(self.y_true, prob_scores)
         
         else:
             self.metrics['precision_macro'] = precision_score(self.y_true, self.y_pred, average='macro')
@@ -166,6 +167,7 @@ class Metrics:
             
             if self.y_prob is not None:
                 self.metrics['log_loss'] = log_loss(self.y_true, self.y_prob)
+                self.metrics['categorical_crossentropy'] = log_loss(self.y_true, self.y_prob)
         
         self.metrics['cohen_kappa'] = cohen_kappa_score(self.y_true, self.y_pred)
         cm = confusion_matrix(self.y_true, self.y_pred)
