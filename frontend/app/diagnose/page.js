@@ -4,8 +4,20 @@ import Card from "@/components/Card";
 import FileUploadCard from "@/components/FileUploadCard";
 
 export default function DiagnosisPage() {
-  const handleFileProcessed = (csvData) => {
-    console.log("Received CSV data from FileUploadCard:", csvData);
+  const handleFileProcessed = async (csvData) => {
+    try {
+      const response = await fetch("http://localhost:5001/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ csvData }),
+      });
+      const result = await response.json();
+      console.log("Upload result:", result);
+    } catch (error) {
+      console.error("Error uploading data:", error);
+    }
   };
 
   return (

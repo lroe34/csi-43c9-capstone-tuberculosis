@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const usersRoute = require("./routes/users");
+const uploadRoute = require("./routes/upload");
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ mongoose
 app.options("*", cors());
 
 app.use("/api/users", usersRoute);
+app.use("/api/upload", uploadRoute);
 
 app.get("/", (req, res) => {
   res.send("Backend is running!");
