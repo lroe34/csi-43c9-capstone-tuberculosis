@@ -1,6 +1,13 @@
+"use client";
+
 import Card from "@/components/Card";
+import FileUploadCard from "@/components/FileUploadCard";
 
 export default function DiagnosisPage() {
+  const handleFileProcessed = (csvData) => {
+    console.log("Received CSV data from FileUploadCard:", csvData);
+  };
+
   return (
     <div className="grid grid-cols-3 gap-6">
       <div className="col-span-2 space-y-6">
@@ -18,12 +25,7 @@ export default function DiagnosisPage() {
             placeholder="Enter medical history"
           />
         </Card>
-        <button className="bg-gray-700 text-white px-4 py-2 rounded-md">
-          Upload Your Information
-        </button>
-        <button className="bg-yellow-600 text-white px-6 py-2 rounded-md ml-4">
-          Continue
-        </button>
+        <FileUploadCard onFileProcessed={handleFileProcessed} />
       </div>
       <div className="col-span-1">
         <Card title="More Resources"></Card>
