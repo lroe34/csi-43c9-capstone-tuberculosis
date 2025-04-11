@@ -36,10 +36,41 @@ const requiredColumns = [
   "TB Type",
 ];
 
+const fileToManualMapping = {
+  Recurrent: "recurrent",
+  Gender: "gender",
+  Age: "age",
+  "Residence time": "residenceTime",
+  Nationality: "nationality",
+  Occupation: "occupation",
+  Education: "education",
+  Revenue: "revenue",
+  "No. families": "noFamilies",
+  "Tb in family": "tbInFamily",
+  "Tb in neighbor": "tbInNeighbor",
+  "Tb contact": "tbContact",
+  "Cough >=2 weeks": "coughTwoWeeks",
+  "Cough <2 weeks": "coughLessThan2Weeks",
+  Emptysis: "emptysis",
+  Fever: "fever",
+  Thoracalgia: "thoracalgia",
+  Others: "others",
+  Sympomless: "symptomless",
+  "Have similar sym before": "similarSymBefore",
+  "X-ray checking": "xrayChecking",
+  "Sputum specimen": "sputumSpecimen",
+  "Tb diagnosed": "tbDiagnosed",
+  "Clinical record checked": "clinicalRecordChecked",
+  "Anti-tb drug time": "antiTbDrugTime",
+  "Patient final type decided": "patientFinalTypeDecided",
+  "Subserotype type": "subserotypeType",
+  "TB Type": "tbType",
+};
+
 export default function FileUploadCard({ onFileProcessed }) {
-  const [csvData, setCsvData] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [modalVariant, setModalVariant] = useState("error");
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -51,20 +82,23 @@ export default function FileUploadCard({ onFileProcessed }) {
     const reader = new FileReader();
     reader.onload = (evt) => {
       const data = evt.target.result;
+      let csvData = "";
       if (extension === "csv") {
-        setCsvData(data);
+        csvData = data;
       } else if (extension === "xlsx" || extension === "xls") {
         const workbook = XLSX.read(data, { type: "binary" });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        const csv = XLSX.utils.sheet_to_csv(worksheet);
-        setCsvData(csv);
+        csvData = XLSX.utils.sheet_to_csv(worksheet);
       } else {
+        setModalVariant("error");
         setModalMessage(
           "Unsupported file type. Please upload a CSV or Excel file."
         );
         setModalOpen(true);
+        return;
       }
+      processCSVData(csvData);
     };
 
     if (extension === "csv") {
@@ -74,37 +108,42 @@ export default function FileUploadCard({ onFileProcessed }) {
     }
   };
 
-  const validateCSVHeaders = (csvString) => {
-    const rows = csvString.split(/\r?\n/).filter((line) => line.trim() !== "");
-    if (rows.length === 0) {
-      return { valid: false, missing: requiredColumns };
+  const processCSVData = (csvString) => {
+    const rows = csvString.split(/\r?\n/).filter((row) => row.trim() !== "");
+    if (rows.length < 2) {
+      setModalVariant("error");
+      setModalMessage("The file does not contain enough data.");
+      setModalOpen(true);
+      return;
     }
     const headers = rows[0].split(",").map((header) => header.trim());
-    const missingColumns = requiredColumns.filter(
-      (col) => !headers.includes(col)
-    );
-    return { valid: missingColumns.length === 0, missing: missingColumns };
-  };
+    const values = rows[1].split(",").map((val) => val.trim());
 
-  const handleProcessFile = () => {
-    if (!csvData) {
-      setModalMessage("No file uploaded or file is empty.");
-      setModalOpen(true);
-      return;
-    }
+    const parsedData = {};
+    requiredColumns.forEach((col) => {
+      const manualKey = fileToManualMapping[col];
+      const index = headers.indexOf(col);
+      parsedData[manualKey] = index !== -1 ? values[index] || "" : "";
+    });
 
-    const { valid, missing } = validateCSVHeaders(csvData);
-    if (!valid) {
-      setModalMessage("Missing required columns: " + missing.join(", "));
-      setModalOpen(true);
-      return;
-    }
+    const missingFields = requiredColumns.filter((col) => {
+      const manualKey = fileToManualMapping[col];
+      return !parsedData[manualKey] || parsedData[manualKey].trim() === "";
+    });
 
-    console.log("CSV Data validated:", csvData);
-    if (onFileProcessed) {
-      onFileProcessed(csvData);
+    onFileProcessed(parsedData);
+
+    if (missingFields.length === 0) {
+      setModalVariant("success");
+      setModalMessage("File processed successfully! Please verify data is correct and submit.");
+    } else {
+      setModalVariant("error");
+      setModalMessage(
+        `File processed successfully, but the following fields are missing: ${missingFields.join(
+          ", "
+        )}. Please update them in the manual form.`
+      );
     }
-    setModalMessage("File processed successfully!");
     setModalOpen(true);
   };
 
@@ -117,19 +156,14 @@ export default function FileUploadCard({ onFileProcessed }) {
           onChange={handleFileUpload}
           className="w-full p-2 border rounded-md"
         />
-        <button
-          onClick={handleProcessFile}
-          className="bg-gray-700 text-white px-4 py-2 rounded-md mt-2"
-        >
-          Process File
-        </button>
       </Card>
       <SingleButtonModal
         open={modalOpen}
         setOpen={setModalOpen}
-        title="File Validation"
+        title="File Status"
         message={modalMessage}
         buttonText="OK"
+        variant={modalVariant}
       />
     </>
   );

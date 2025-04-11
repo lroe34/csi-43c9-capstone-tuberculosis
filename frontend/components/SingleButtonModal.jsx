@@ -8,7 +8,10 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import {
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
 
 export default function SingleButtonModal({
   open,
@@ -16,7 +19,29 @@ export default function SingleButtonModal({
   title,
   message,
   buttonText = "OK",
+  variant = "error",
 }) {
+  const variantSettings = {
+    error: {
+      icon: ExclamationTriangleIcon,
+      iconBg: "bg-red-100",
+      iconColor: "text-red-600",
+      buttonBg: "bg-red-600",
+      buttonHover: "hover:bg-red-700",
+      buttonFocus: "focus:ring-red-500",
+    },
+    success: {
+      icon: CheckCircleIcon,
+      iconBg: "bg-green-100",
+      iconColor: "text-green-600",
+      buttonBg: "bg-green-600",
+      buttonHover: "hover:bg-green-700",
+      buttonFocus: "focus:ring-green-500",
+    },
+  };
+  const settings = variantSettings[variant] || variantSettings.error;
+  const IconComponent = settings.icon;
+
   return (
     <Transition show={open} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={setOpen}>
@@ -46,9 +71,11 @@ export default function SingleButtonModal({
               <DialogPanel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                      <ExclamationTriangleIcon
-                        className="h-6 w-6 text-red-600"
+                    <div
+                      className={`mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${settings.iconBg} sm:mx-0 sm:h-10 sm:w-10`}
+                    >
+                      <IconComponent
+                        className={`h-6 w-6 ${settings.iconColor}`}
                         aria-hidden="true"
                       />
                     </div>
@@ -69,7 +96,7 @@ export default function SingleButtonModal({
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:text-sm"
+                    className={`inline-flex w-full justify-center rounded-md ${settings.buttonBg} px-4 py-2 text-base font-medium text-white shadow-sm ${settings.buttonHover} focus:outline-none focus:ring-2 ${settings.buttonFocus} focus:ring-offset-2 sm:text-sm`}
                   >
                     {buttonText}
                   </button>
