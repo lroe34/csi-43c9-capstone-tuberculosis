@@ -4,68 +4,7 @@ import { useState } from "react";
 import SingleButtonModal from "@/components/SingleButtonModal";
 import Card from "@/components/Card";
 import * as XLSX from "xlsx";
-
-const requiredColumns = [
-  "Recurrent",
-  "Gender",
-  "Age",
-  "Residence time",
-  "Nationality",
-  "Occupation",
-  "Education",
-  "Revenue",
-  "No. families",
-  "Tb in family",
-  "Tb in neighbor",
-  "Tb contact",
-  "Cough >=2 weeks",
-  "Cough <2 weeks",
-  "Emptysis",
-  "Fever",
-  "Thoracalgia",
-  "Others",
-  "Sympomless",
-  "Have similar sym before",
-  "X-ray checking",
-  "Sputum specimen",
-  "Tb diagnosed",
-  "Clinical record checked",
-  "Anti-tb drug time",
-  "Patient final type decided",
-  "Subserotype type",
-  "TB Type",
-];
-
-const fileToManualMapping = {
-  Recurrent: "recurrent",
-  Gender: "gender",
-  Age: "age",
-  "Residence time": "residenceTime",
-  Nationality: "nationality",
-  Occupation: "occupation",
-  Education: "education",
-  Revenue: "revenue",
-  "No. families": "noFamilies",
-  "Tb in family": "tbInFamily",
-  "Tb in neighbor": "tbInNeighbor",
-  "Tb contact": "tbContact",
-  "Cough >=2 weeks": "coughTwoWeeks",
-  "Cough <2 weeks": "coughLessThan2Weeks",
-  Emptysis: "emptysis",
-  Fever: "fever",
-  Thoracalgia: "thoracalgia",
-  Others: "others",
-  Sympomless: "symptomless",
-  "Have similar sym before": "similarSymBefore",
-  "X-ray checking": "xrayChecking",
-  "Sputum specimen": "sputumSpecimen",
-  "Tb diagnosed": "tbDiagnosed",
-  "Clinical record checked": "clinicalRecordChecked",
-  "Anti-tb drug time": "antiTbDrugTime",
-  "Patient final type decided": "patientFinalTypeDecided",
-  "Subserotype type": "subserotypeType",
-  "TB Type": "tbType",
-};
+import { requiredColumns, fileToManualMapping } from "@/utils/columnMappings";
 
 export default function FileUploadCard({ onFileProcessed }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -135,7 +74,9 @@ export default function FileUploadCard({ onFileProcessed }) {
 
     if (missingFields.length === 0) {
       setModalVariant("success");
-      setModalMessage("File processed successfully! Please verify data is correct and submit.");
+      setModalMessage(
+        "File processed successfully! Please verify data is correct and submit."
+      );
     } else {
       setModalVariant("error");
       setModalMessage(

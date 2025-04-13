@@ -5,41 +5,20 @@ import { useRouter } from "next/navigation";
 import Card from "@/components/Card";
 import FileUploadCard from "@/components/FileUploadCard";
 import SingleButtonModal from "@/components/SingleButtonModal";
-
+import convertManualDataToFeatures from "@/utils/convertManualDataToFeatures";
+import { requiredColumns, fileToManualMapping } from "@/utils/columnMappings";
 export default function DiagnosisPage() {
   const router = useRouter();
 
-  const [manualData, setManualData] = useState({
-    recurrent: "",
-    gender: "",
-    age: "",
-    residenceTime: "",
-    nationality: "",
-    occupation: "",
-    education: "",
-    revenue: "",
-    noFamilies: "",
-    tbInFamily: "",
-    tbInNeighbor: "",
-    tbContact: "",
-    coughTwoWeeks: "",
-    coughLessThan2Weeks: "",
-    emptysis: "",
-    fever: "",
-    thoracalgia: "",
-    others: "",
-    symptomless: "",
-    similarSymBefore: "",
-    xrayChecking: "",
-    sputumSpecimen: "",
-    tbDiagnosed: "",
-    clinicalRecordChecked: "",
-    antiTbDrugTime: "",
-    patientFinalTypeDecided: "",
-    subserotypeType: "",
-    tbType: "",
-  });
+  const initialManualData = requiredColumns.reduce((acc, col) => {
+    const stateKey = fileToManualMapping[col];
+    if (stateKey) {
+      acc[stateKey] = "";
+    }
+    return acc;
+  }, {});
 
+  const [manualData, setManualData] = useState(initialManualData);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [missingFields, setMissingFields] = useState([]);
@@ -66,18 +45,25 @@ export default function DiagnosisPage() {
     if (missing.length > 0) {
       setMissingFields(missing);
       setModalMessage(
-        "There are missing fields. Please complete the highlighted fields."
+        `There are missing fields. Please complete the highlighted fields. Missing fields: ${missing
+          .map((field) => field.replace(/([A-Z])/g, " $1"))
+          .join(", ")}`
       );
       setModalOpen(true);
       return;
     }
+
+    const featuresArray = convertManualDataToFeatures(manualData);
+    console.log("Features array:", featuresArray);
+    console.log("Features array length:", featuresArray.length);
+    console.log("Manual data length:", Object.keys(manualData).length);
     try {
       const predictionResponse = await fetch(
         "https://dummy-function-750908721088.us-central1.run.app",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ manualData }),
+          body: JSON.stringify({ features: featuresArray }),
         }
       );
       const predictionResult = await predictionResponse.json();
@@ -107,19 +93,6 @@ export default function DiagnosisPage() {
         <Card title="Data Input">
           <form onSubmit={handleManualSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Recurrent
-                </label>
-                <input
-                  type="text"
-                  name="recurrent"
-                  value={manualData.recurrent}
-                  onChange={handleManualChange}
-                  className={inputClass("recurrent")}
-                  placeholder="Recurrent"
-                />
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Gender
@@ -157,58 +130,6 @@ export default function DiagnosisPage() {
                   onChange={handleManualChange}
                   className={inputClass("residenceTime")}
                   placeholder="Residence Time"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Nationality
-                </label>
-                <input
-                  type="text"
-                  name="nationality"
-                  value={manualData.nationality}
-                  onChange={handleManualChange}
-                  className={inputClass("nationality")}
-                  placeholder="Nationality"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Occupation
-                </label>
-                <input
-                  type="text"
-                  name="occupation"
-                  value={manualData.occupation}
-                  onChange={handleManualChange}
-                  className={inputClass("occupation")}
-                  placeholder="Occupation"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Education
-                </label>
-                <input
-                  type="text"
-                  name="education"
-                  value={manualData.education}
-                  onChange={handleManualChange}
-                  className={inputClass("education")}
-                  placeholder="Education"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Revenue
-                </label>
-                <input
-                  type="number"
-                  name="revenue"
-                  value={manualData.revenue}
-                  onChange={handleManualChange}
-                  className={inputClass("revenue")}
-                  placeholder="Revenue"
                 />
               </div>
               <div>
