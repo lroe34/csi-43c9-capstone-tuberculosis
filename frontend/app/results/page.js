@@ -1,9 +1,10 @@
 "use client";
 
+import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Card from "@/components/Card";
 
-export default function ResultsPage() {
+function ResultsContent() {
   const searchParams = useSearchParams();
   const prediction = searchParams.get("prediction");
 
@@ -31,5 +32,13 @@ export default function ResultsPage() {
         </p>
       </Card>
     </div>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense fallback={<div>Loading results...</div>}>
+      <ResultsContent />
+    </Suspense>
   );
 }
