@@ -12,7 +12,7 @@ function ResultsContent() {
     0: "Single resistance",
     1: "Multi resistance",
     2: "Poly resistance",
-    3: "NO resistance",
+    3: "No resistance",
   };
 
   const predictionText =
