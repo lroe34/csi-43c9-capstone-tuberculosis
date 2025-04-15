@@ -29,20 +29,8 @@ function ResultsContent() {
             : "No prediction available."}
         </p>
       </Card>
-      <Card title="Recommendations for Further Actions">
-        <p>
-          {predictionParam
-            ? "Based on your prediction, we recommend you consult with a specialist."
-            : "No recommendations available."}
-        </p>
-      </Card>
-      <Card title="Resources for Medical Help">
-        <p>
-          {predictionParam
-            ? "Here are some resources: [Link to resource 1, Link to resource 2]"
-            : "No resources available."}
-        </p>
-      </Card>
+      <Card title="Recommendations for Further Actions"></Card>
+      <Card title="Resources for Medical Help"></Card>
     </div>
   );
 }
