@@ -60,22 +60,51 @@ export default function DiagnosisPage() {
     console.log("Features array length:", featuresArray.length);
     console.log("Manual data length:", Object.keys(manualData).length);
     try {
-      const predictionResponse = await fetch(
-        "https://dummy-function-750908721088.us-central1.run.app",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ features: featuresArray }),
-        }
-      );
-      const predictionResult = await predictionResponse.json();
+      const initialPredictionURL =
+        "https://dummy-function-750908721088.us-central1.run.app";
 
-      //TODO: something here based on response, sending it somewhere else
+      const predictionResponse = await fetch(initialPredictionURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ features: featuresArray }),
+      });
+      const predictionResult = await predictionResponse.json();
+      const predictedValue = String(predictionResult.prediction);
       console.log("Prediction result:", predictionResult);
 
-      router.push(
-        `/results?prediction=${encodeURIComponent(predictionResult.prediction)}`
-      );
+      const additionalEndpoints = {
+        0: "get-this-later",
+        1: "get-this-later",
+        2: "get-this-later",
+        3: "get-this-later",
+      };
+
+      if (additionalEndpoints[predictedValue]) {
+        const additionalResponse = await fetch(
+          additionalEndpoints[predictedValue],
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              features: featuresArray,
+              prediction: predictedValue,
+            }),
+          }
+        );
+        const additionalResult = await additionalResponse.json();
+        console.log("Additional result:", additionalResult);
+
+        router.push(
+          `/results?prediction=${encodeURIComponent(
+            predictedValue
+          )}&extra=${encodeURIComponent(JSON.stringify(additionalResult))}`
+        );
+      } else {
+        // In theory we never get here
+        router.push(
+          `/results?prediction=${encodeURIComponent(predictedValue)}`
+        );
+      }
     } catch (error) {
       console.error("Error processing manual data:", error);
     }
