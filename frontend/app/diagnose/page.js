@@ -72,6 +72,7 @@ export default function DiagnosisPage() {
       const predictedValue = String(predictionResult.prediction);
       console.log("Prediction result:", predictionResult);
 
+      /*  
       const additionalEndpoints = {
         0: "get-this-later",
         1: "get-this-later",
@@ -100,11 +101,10 @@ export default function DiagnosisPage() {
           )}&extra=${encodeURIComponent(JSON.stringify(additionalResult))}`
         );
       } else {
-        // In theory we never get here
-        router.push(
-          `/results?prediction=${encodeURIComponent(predictedValue)}`
-        );
-      }
+          // In theory we never get here
+      */
+      router.push(`/results?prediction=${encodeURIComponent(predictedValue)}`);
+      // }
     } catch (error) {
       console.error("Error processing manual data:", error);
     }
