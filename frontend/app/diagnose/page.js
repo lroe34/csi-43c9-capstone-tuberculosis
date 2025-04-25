@@ -27,6 +27,7 @@ export default function DiagnosisPage() {
 
   const handleFileProcessed = (parsedData) => {
     setManualData((prev) => ({ ...prev, ...parsedData }));
+    console.log("Parsed data:", parsedData);
   };
 
   const handleManualChange = (e) => {
@@ -56,6 +57,7 @@ export default function DiagnosisPage() {
     }
 
     const featuresArray = convertManualDataToFeatures(manualData);
+
     console.log("Features array:", featuresArray);
     console.log("Features array length:", featuresArray.length);
     console.log("Manual data length:", Object.keys(manualData).length);
@@ -72,12 +74,10 @@ export default function DiagnosisPage() {
       const predictedValue = String(predictionResult.prediction);
       console.log("Prediction result:", predictionResult);
 
-      /*  
       const additionalEndpoints = {
-        0: "get-this-later",
-        1: "get-this-later",
-        2: "get-this-later",
-        3: "get-this-later",
+        0: "https://single-resistance-750908721088.us-central1.run.app", // single
+        1: "https://multi-resistance-750908721088.us-central1.run.app", // multi
+        2: "https://poly-resistance-750908721088.us-central1.run.app", // poly
       };
 
       if (additionalEndpoints[predictedValue]) {
@@ -88,7 +88,6 @@ export default function DiagnosisPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               features: featuresArray,
-              prediction: predictedValue,
             }),
           }
         );
@@ -101,10 +100,11 @@ export default function DiagnosisPage() {
           )}&extra=${encodeURIComponent(JSON.stringify(additionalResult))}`
         );
       } else {
-          // In theory we never get here
-      */
-      router.push(`/results?prediction=${encodeURIComponent(predictedValue)}`);
-      // }
+        // This happens when no resistance is detected
+        router.push(
+          `/results?prediction=${encodeURIComponent(predictedValue)}`
+        );
+      }
     } catch (error) {
       console.error("Error processing manual data:", error);
     }

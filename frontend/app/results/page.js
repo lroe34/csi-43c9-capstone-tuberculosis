@@ -29,6 +29,13 @@ function ResultsContent() {
             : "No prediction available."}
         </p>
       </Card>
+      <Card title="Additional Information On Resistances">
+        <p>
+          {predictionParam
+            ? `The prediction result indicates: ${predictionText}`
+            : "No additional information available."}
+        </p>
+      </Card>
       <Card title="Recommendations for Further Actions"></Card>
       <Card title="Resources for Medical Help"></Card>
     </div>

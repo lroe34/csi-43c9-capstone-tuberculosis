@@ -55,18 +55,26 @@ export default function FileUploadCard({ onFileProcessed }) {
       setModalOpen(true);
       return;
     }
+
     const headers = rows[0].split(",").map((header) => header.trim());
     const values = rows[1].split(",").map((val) => val.trim());
 
+    console.log("Headers:", headers);
+    console.log("Amt of values:", values.length);
+
     const parsedData = {};
     requiredColumns.forEach((col) => {
-      const manualKey = fileToManualMapping[col];
-      const index = headers.indexOf(col);
+      const trimmedCol = col.trim();
+      const manualKey = fileToManualMapping[trimmedCol];
+      const index = headers.findIndex(
+        (h) => h.trim().toLowerCase() === trimmedCol.toLowerCase()
+      );
       parsedData[manualKey] = index !== -1 ? values[index] || "" : "";
     });
 
     const missingFields = requiredColumns.filter((col) => {
-      const manualKey = fileToManualMapping[col];
+      const trimmedCol = col.trim();
+      const manualKey = fileToManualMapping[trimmedCol];
       return !parsedData[manualKey] || parsedData[manualKey].trim() === "";
     });
 
@@ -85,6 +93,7 @@ export default function FileUploadCard({ onFileProcessed }) {
         )}. Please update them in the manual form.`
       );
     }
+
     setModalOpen(true);
   };
 
