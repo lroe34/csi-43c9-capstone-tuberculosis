@@ -48,6 +48,8 @@ export default function FileUploadCard({ onFileProcessed }) {
   };
 
   const processCSVData = (csvString) => {
+    const normalize = (str) => str.trim().toLowerCase();
+
     const rows = csvString.split(/\r?\n/).filter((row) => row.trim() !== "");
     if (rows.length < 2) {
       setModalVariant("error");
@@ -56,25 +58,24 @@ export default function FileUploadCard({ onFileProcessed }) {
       return;
     }
 
-    const headers = rows[0].split(",").map((header) => header.trim());
-    const values = rows[1].split(",").map((val) => val.trim());
-
-    console.log("Headers:", headers);
-    console.log("Amt of values:", values.length);
+    const headers = rows[0].split(",").map((h) => h.trim());
+    const values = rows[1].split(",").map((v) => v.trim());
 
     const parsedData = {};
+
     requiredColumns.forEach((col) => {
-      const trimmedCol = col.trim();
-      const manualKey = fileToManualMapping[trimmedCol];
-      const index = headers.findIndex(
-        (h) => h.trim().toLowerCase() === trimmedCol.toLowerCase()
+      const normalizedCol = normalize(col);
+      const headerIndex = headers.findIndex(
+        (h) => normalize(h) === normalizedCol
       );
-      parsedData[manualKey] = index !== -1 ? values[index] || "" : "";
+
+      const manualKey = fileToManualMapping[col];
+      parsedData[manualKey] =
+        headerIndex !== -1 ? values[headerIndex] || "" : "";
     });
 
     const missingFields = requiredColumns.filter((col) => {
-      const trimmedCol = col.trim();
-      const manualKey = fileToManualMapping[trimmedCol];
+      const manualKey = fileToManualMapping[col];
       return !parsedData[manualKey] || parsedData[manualKey].trim() === "";
     });
 
@@ -83,14 +84,14 @@ export default function FileUploadCard({ onFileProcessed }) {
     if (missingFields.length === 0) {
       setModalVariant("success");
       setModalMessage(
-        "File processed successfully! Please verify data is correct and submit."
+        "File processed successfully! Please verify data and submit."
       );
     } else {
       setModalVariant("error");
       setModalMessage(
-        `File processed successfully, but the following fields are missing: ${missingFields.join(
+        `File processed, but these fields are missing: ${missingFields.join(
           ", "
-        )}. Please update them in the manual form.`
+        )}.`
       );
     }
 

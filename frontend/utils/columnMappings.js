@@ -16,7 +16,7 @@ export const requiredColumns = [
   "X-ray checking",
   "Sputum specimen",
   "Tb diagnosed",
-  "Clinical record checked ",
+  "Clinical record checked",
   "Anti-tb drug time",
   "Patient final type decided",
   "Subserotype type",
