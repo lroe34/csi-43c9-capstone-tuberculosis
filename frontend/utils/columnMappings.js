@@ -1,25 +1,25 @@
 export const requiredColumns = [
-  "Gender",
-  "Age",
-  "Residence time",
-  "No. families",
-  "Tb in family",
-  "Tb in neighbor",
-  "Tb contact",
-  "Cough >=2 weeks",
-  "Cough <2 weeks",
-  "Emptysis",
-  "Fever",
-  "Thoracalgia",
-  "Sympomless",
-  "Have similar sym before",
-  "X-ray checking",
-  "Sputum specimen",
-  "Tb diagnosed",
-  "Clinical record checked",
-  "Anti-tb drug time",
-  "Patient final type decided",
-  "Subserotype type",
+  "Gender", // first
+  "Age", // first
+  "Residence time", // first
+  "No. families", // first
+  "Tb in family", // first
+  "Tb in neighbor", // first
+  "Tb contact", // first
+  "Cough >=2 weeks",  // first
+  "Cough <2 weeks", // first
+  "Emptysis", // first
+  "Fever", // first
+  "Thoracalgia", // first
+  "Sympomless", // first
+  "Have similar sym before", // first
+  "X-ray checking", // first
+  "Sputum specimen", // first
+  "Tb diagnosed", // first
+  "Clinical record checked", // first
+  "Anti-tb drug time", // first
+  "Patient final type decided", // first
+  "Subserotype type", // first
   "Retozide",
   "Rifampicin",
   "Streptomycin",
@@ -48,7 +48,7 @@ export const fileToManualMapping = {
   "Tb diagnosed": "tbDiagnosed",
   "Clinical record checked": "clinicalRecordChecked",
   "Anti-tb drug time": "antiTbDrugTime",
-  "Patient final type decided": "patientFinalTypeDecided",
+  "Patient final type decided": "patientFinalTypeDecided", 
   "Subserotype type": "subserotypeType",
   Retozide: "retozide",
   Rifampicin: "rifampicin",
@@ -57,3 +57,5 @@ export const fileToManualMapping = {
   Ofloxacin: "ofloxacin",
   Kanamycin: "kanamycin",
 };
+
+// need 21 for initial prediction

@@ -58,6 +58,8 @@ export default function DiagnosisPage() {
 
     const featuresArray = convertManualDataToFeatures(manualData);
 
+    const firstPrediction = featuresArray.slice(0, 21);
+
     console.log("Features array:", featuresArray);
     console.log("Features array length:", featuresArray.length);
     console.log("Manual data length:", Object.keys(manualData).length);
@@ -68,7 +70,7 @@ export default function DiagnosisPage() {
       const predictionResponse = await fetch(initialPredictionURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ features: featuresArray }),
+        body: JSON.stringify({ features: firstPrediction }),
       });
       const predictionResult = await predictionResponse.json();
       const predictedValue = String(predictionResult.prediction);
