@@ -4,27 +4,18 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const usersRoute = require("./routes/users");
 const uploadRoute = require("./routes/upload");
-
+const metricsRoute = require("./routes/metrics");
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://csi-43c9-capstone-tuberculosis-steel.vercel.app",
-];
+const allowedOrigins = ["*"];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS policy does not allow this origin"));
-      }
-    },
+    origin: "*",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // pls cooperate wth me :(
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -40,6 +31,7 @@ app.options("*", cors());
 
 app.use("/api/users", usersRoute);
 app.use("/api/upload", uploadRoute);
+app.use("/api/metrics", metricsRoute);
 
 app.get("/", (req, res) => {
   res.send("Backend is running!");

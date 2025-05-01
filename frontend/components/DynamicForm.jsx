@@ -2,15 +2,6 @@
 import React from "react";
 import { requiredColumns, fileToManualMapping } from "@/utils/columnMappings";
 
-
-// TODO: update maping for rest of them 
-const inputTypeMapping = {
-  Age: "number",
-  "No. families": "number",
-  "Tb in family": "number",
-  "Tb in neighbor": "number",
-};
-
 const DynamicForm = ({
   manualData,
   handleManualChange,
@@ -22,14 +13,13 @@ const DynamicForm = ({
       <div className="grid grid-cols-2 gap-4">
         {requiredColumns.map((column) => {
           const stateKey = fileToManualMapping[column];
-          const type = inputTypeMapping[column] || "text";
           return (
-            <div key={stateKey}>
+            <div key={column}>
               <label className="block text-sm font-medium text-gray-700">
                 {column}
               </label>
               <input
-                type={type}
+                type={"number"}
                 name={stateKey}
                 value={manualData[stateKey] || ""}
                 onChange={handleManualChange}
@@ -42,7 +32,7 @@ const DynamicForm = ({
       </div>
       <button
         type="submit"
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out"
       >
         Submit For Prediction
       </button>

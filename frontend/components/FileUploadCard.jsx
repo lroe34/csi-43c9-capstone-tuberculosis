@@ -48,6 +48,8 @@ export default function FileUploadCard({ onFileProcessed }) {
   };
 
   const processCSVData = (csvString) => {
+    const normalize = (str) => str.trim().toLowerCase();
+
     const rows = csvString.split(/\r?\n/).filter((row) => row.trim() !== "");
     if (rows.length < 2) {
       setModalVariant("error");
@@ -55,14 +57,21 @@ export default function FileUploadCard({ onFileProcessed }) {
       setModalOpen(true);
       return;
     }
-    const headers = rows[0].split(",").map((header) => header.trim());
-    const values = rows[1].split(",").map((val) => val.trim());
+
+    const headers = rows[0].split(",").map((h) => h.trim());
+    const values = rows[1].split(",").map((v) => v.trim());
 
     const parsedData = {};
+
     requiredColumns.forEach((col) => {
+      const normalizedCol = normalize(col);
+      const headerIndex = headers.findIndex(
+        (h) => normalize(h) === normalizedCol
+      );
+
       const manualKey = fileToManualMapping[col];
-      const index = headers.indexOf(col);
-      parsedData[manualKey] = index !== -1 ? values[index] || "" : "";
+      parsedData[manualKey] =
+        headerIndex !== -1 ? values[headerIndex] || "" : "";
     });
 
     const missingFields = requiredColumns.filter((col) => {
@@ -75,16 +84,17 @@ export default function FileUploadCard({ onFileProcessed }) {
     if (missingFields.length === 0) {
       setModalVariant("success");
       setModalMessage(
-        "File processed successfully! Please verify data is correct and submit."
+        "File processed successfully! Please verify data and submit."
       );
     } else {
       setModalVariant("error");
       setModalMessage(
-        `File processed successfully, but the following fields are missing: ${missingFields.join(
+        `File processed, but these fields are missing: ${missingFields.join(
           ", "
-        )}. Please update them in the manual form.`
+        )}.`
       );
     }
+
     setModalOpen(true);
   };
 

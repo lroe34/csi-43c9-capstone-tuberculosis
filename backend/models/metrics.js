@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const MetricsSchema = new mongoose.Schema(
   {
-    patientId: { type: String, default: null },
+    patientId: { type: String, required: true, unique: true, index: true },
     firstName: { type: String, default: null },
     lastName: { type: String, default: null },
 
@@ -18,24 +18,28 @@ const MetricsSchema = new mongoose.Schema(
     "Tb in family": { type: Number },
     "Tb in neighbor": { type: Number },
     "Tb contact": { type: String },
-    "Cough >=2 weeks": { type: Boolean },
-    "Cough <2 weeks": { type: Boolean },
-    Emptysis: { type: Boolean },
-    Fever: { type: Boolean },
-    Thoracalgia: { type: Boolean },
+    "Cough >=2 weeks": { type: Number },
+    "Cough <2 weeks": { type: Number },
+    Emptysis: { type: Number },
+    Fever: { type: Number },
+    Thoracalgia: { type: Number },
     Others: { type: String },
-    Sympomless: { type: Boolean },
-    "Have similar sym before": { type: Boolean },
-    "X-ray checking": { type: Boolean },
-    "Sputum specimen": { type: Boolean },
-    "Tb diagnosed": { type: Boolean },
-    "Clinical record checked": { type: Boolean },
+    Sympomless: { type: Number },
+    "Have similar sym before": { type: Number },
+    "X-ray checking": { type: Number },
+    "Sputum specimen": { type: Number },
+    "Tb diagnosed": { type: Number },
+    "Clinical record checked": { type: Number },
     "Anti-tb drug time": { type: String },
     "Patient final type decided": { type: String },
     "Subserotype type": { type: String },
     "TB Type": { type: String },
+    "predictionType": { type: String },
+    "predictionDetail": { type: String },
   },
   { timestamps: true }
 );
+
+MetricsSchema.index({ firstName: 1, lastName: 1 });
 
 module.exports = mongoose.model("Metrics", MetricsSchema);
