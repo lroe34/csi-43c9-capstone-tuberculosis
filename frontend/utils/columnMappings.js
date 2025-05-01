@@ -20,12 +20,6 @@ export const requiredColumns = [
   "Anti-tb drug time", // first
   "Patient final type decided", // first
   "Subserotype type", // first
-  "Retozide",
-  "Rifampicin",
-  "Streptomycin",
-  "Ethambutol",
-  "Ofloxacin",
-  "Kanamycin",
 ];
 
 export const fileToManualMapping = {
@@ -48,14 +42,33 @@ export const fileToManualMapping = {
   "Tb diagnosed": "tbDiagnosed",
   "Clinical record checked": "clinicalRecordChecked",
   "Anti-tb drug time": "antiTbDrugTime",
-  "Patient final type decided": "patientFinalTypeDecided", 
+  "Patient final type decided": "patientFinalTypeDecided",
   "Subserotype type": "subserotypeType",
-  Retozide: "retozide",
-  Rifampicin: "rifampicin",
-  Streptomycin: "streptomycin",
-  Ethambutol: "ethambutol",
-  Ofloxacin: "ofloxacin",
-  Kanamycin: "kanamycin",
 };
 
-// need 21 for initial prediction
+export const singleRequiredColumns = [
+  "noFamilies",
+  "residenceTime",
+  "coughLessThan2Weeks",
+  "age",
+  "xrayChecking",
+  "similarSymBefore",
+  "coughTwoWeeks",
+  "tbDiagnosed",
+  "antiTbDrugTime",
+  "tbInNeighbor",
+  "clinicalRecordChecked",,
+  "patientFinalTypeDecided",
+  "sputumSpecimen",
+  "fever",
+  "gender",
+  "thoracalgia",
+];
+
+export const manualToSchemaMapping = Object.entries(fileToManualMapping).reduce(
+  (acc, [schemaKey, manualKey]) => {
+    acc[manualKey] = schemaKey;
+    return acc;
+  },
+  {}
+);

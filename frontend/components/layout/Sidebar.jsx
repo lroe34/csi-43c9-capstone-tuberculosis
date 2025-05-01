@@ -16,7 +16,6 @@ const sidebarItems = [
   { name: "Search", icon: MagnifyingGlassIcon, path: "/search" },
   { name: "Diagnose", icon: ScaleIcon, path: "/diagnose" },
   { name: "Results", icon: BeakerIcon, path: "/results" },
-  { name: "Settings", icon: Cog6ToothIcon, path: "/settings" },
 ];
 
 const Sidebar = () => {

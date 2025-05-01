@@ -37,7 +37,6 @@ function ResultsContent() {
         </p>
       </Card>
       <Card title="Recommendations for Further Actions"></Card>
-      <Card title="Resources for Medical Help"></Card>
     </div>
   );
 }
