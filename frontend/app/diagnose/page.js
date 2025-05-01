@@ -164,7 +164,7 @@ export default function DiagnosisPage() {
           `Initial prediction failed: ${predictionResponse.statusText}`
         );
       const predictionResult = await predictionResponse.json();
-      const predictedValue = "0" //String(predictionResult.prediction);
+      const predictedValue = String(predictionResult.prediction);
       console.log("Initial Prediction result:", predictionResult);
 
       let finalResult = predictionResult;
