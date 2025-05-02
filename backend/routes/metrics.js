@@ -26,7 +26,21 @@ router.get("/search", async (req, res) => {
   }
 });
 
+router.get("/recent", async (req, res) => {
+  const { limit } = req.query;
+  const queryLimit = parseInt(limit) || 10;
 
+  try {
+    const results = await Metrics.find()
+      .sort({ timestamp: -1 })
+      .limit(queryLimit);
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Recent data error:", error);
+    res.status(500).json({ message: "Error fetching recent data", error });
+  }
+});
 
 
 module.exports = router;
