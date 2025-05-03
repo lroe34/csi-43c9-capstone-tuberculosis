@@ -12,21 +12,22 @@ import {
   requiredColumns,
   fileToManualMapping,
   manualToSchemaMapping,
-  singleRequiredColumns,
 } from "@/utils/columnMappings";
-import API_URL from "../../utils/api.js";
+import axiosInstance from "@/utils/api";
 import createSingleResistanceData from "@/utils/createSingleResistanceData.js";
-
+import { useAuth } from "@/context/authContext";
 const generatePatientId = () => {
   return `PER-${uuidv4()}`;
 };
 
 export default function DiagnosisPage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [patientId, setPatientId] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [savePatientInfo, setSavePatientInfo] = useState(true);
 
   const initialManualData = requiredColumns.reduce((acc, schemaKey) => {
     const camelCaseKey = fileToManualMapping[schemaKey];
@@ -50,6 +51,22 @@ export default function DiagnosisPage() {
     setPatientId(generatePatientId());
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      setSavePatientInfo(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!savePatientInfo) {
+      setFirstName("");
+      setLastName("");
+      setMissingFields((prev) =>
+        prev.filter((f) => f !== "firstName" && f !== "lastName")
+      );
+    }
+  }, [savePatientInfo]);
+
   const handleFileProcessed = (parsedData) => {
     const fileFirstName = parsedData.firstName || parsedData.FirstName;
     const fileLastName = parsedData.lastName || parsedData.LastName;
@@ -57,6 +74,10 @@ export default function DiagnosisPage() {
     const restData = { ...parsedData };
     if (fileFirstName) delete restData.firstName;
     if (fileLastName) delete restData.lastName;
+
+    if (fileFirstName || fileLastName) {
+      setSavePatientInfo(true);
+    }
 
     if (fileFirstName) {
       setFirstName(fileFirstName);
@@ -98,7 +119,7 @@ export default function DiagnosisPage() {
     } else if (name === "lastName") {
       setLastName(value);
     }
-    if (value.trim() !== "") {
+    if (savePatientInfo && value.trim() !== "") {
       setMissingFields((prev) => prev.filter((field) => field !== name));
     }
   };
@@ -118,8 +139,10 @@ export default function DiagnosisPage() {
     });
 
     const missingPatientInfo = [];
-    if (firstName.trim() === "") missingPatientInfo.push("firstName");
-    if (lastName.trim() === "") missingPatientInfo.push("lastName");
+    if (savePatientInfo) {
+      if (firstName.trim() === "") missingPatientInfo.push("firstName");
+      if (lastName.trim() === "") missingPatientInfo.push("lastName");
+    }
 
     const allMissingCamelCase = [...missingManual, ...missingPatientInfo];
 
@@ -181,11 +204,16 @@ export default function DiagnosisPage() {
             createSingleResistanceData(manualData)
           );
           sendableFeaturesArray = singleResistanceFeatureArray;
-          console.log("Single Resistance Data:", createSingleResistanceData(manualData));
-          console.log("Single Resistance Feature Array:", singleResistanceFeatureArray);
-
+          console.log(
+            "Single Resistance Data:",
+            createSingleResistanceData(manualData)
+          );
+          console.log(
+            "Single Resistance Feature Array:",
+            singleResistanceFeatureArray
+          );
         } else {
-          sendableFeaturesArray = featuresArray.slice(21); // Theoretically shouldnt have to slice but just in case
+          sendableFeaturesArray = featuresArray;
         }
         const additionalResponse = await fetch(
           additionalEndpoints[predictedValue],
@@ -207,122 +235,117 @@ export default function DiagnosisPage() {
         finalResult = { ...finalResult, ...additionalResult };
       }
 
-      //TODO: need to test this with the new models
-      let calculatedTbType = "Unknown";
-      let calculatedAdditionalInfo = "N/A";
-
-      switch (String(predictedValue)) {
-        case "0":
-          calculatedTbType = "No Resistance Detected / Single Resistance";
-          if (finalResult?.specific_drugs?.length > 0) {
-            calculatedAdditionalInfo = `Resistant to: ${finalResult.specific_drugs.join(
-              ", "
-            )}`;
-            if (finalResult.specific_drugs.length === 1)
-              calculatedTbType = "Single Drug Resistance";
-          } else {
-            calculatedAdditionalInfo =
-              finalResult?.message ||
-              "No resistance detected or specific drug info unavailable.";
-          }
-          break;
-        case "1":
-          calculatedTbType = "Multi-Drug Resistance";
-          calculatedAdditionalInfo = finalResult?.message || "";
-          if (
-            finalResult?.resistant_drugs &&
-            Array.isArray(finalResult.resistant_drugs)
-          ) {
-            calculatedAdditionalInfo += ` Detected resistance: ${finalResult.resistant_drugs.join(
-              ", "
-            )}`;
-          }
-          break;
-        case "2":
-          calculatedTbType = "Poly-Drug Resistance";
-          calculatedAdditionalInfo = finalResult?.message || "";
-          if (
-            finalResult?.resistant_drugs &&
-            Array.isArray(finalResult.resistant_drugs)
-          ) {
-            calculatedAdditionalInfo += ` Detected resistance: ${finalResult.resistant_drugs.join(
-              ", "
-            )}`;
-          }
-          break;
-      }
-
-      const transformedData = {};
-      for (const camelCaseKey in manualData) {
-        const schemaKey = manualToSchemaMapping[camelCaseKey];
-        if (schemaKey) {
-          transformedData[schemaKey] = manualData[camelCaseKey];
-        } else {
-          console.warn(
-            `No schema mapping found for state key: ${camelCaseKey}. Not included in save data.`
-          );
-        }
-      }
-
-      const recordToSave = {
-        patientId,
-        firstName,
-        lastName,
-        ...transformedData,
-        predictionType: predictedValue,
-        predictionDetails: finalResult,
-        "TB Type": calculatedTbType,
-      };
-
-      console.log(
-        "Attempting to save record (with Schema Keys):",
-        recordToSave
-      );
-
       let saveSuccess = false;
-      try {
-        const saveUrl = `${API_URL}/api/upload/single`;
-        console.log("Saving to URL:", saveUrl);
 
-        const saveResponse = await fetch(saveUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(recordToSave),
-        });
-
-        if (!saveResponse.ok) {
-          let errorMsg = `Failed to save patient record. Status: ${saveResponse.status}`;
-          let errorBody = null;
-          try {
-            errorBody = await saveResponse.json();
-            errorMsg = errorBody.message || errorMsg;
-          } catch (e) {
-            console.warn("Could not parse error response body:", e);
-            try {
-              const textBody = await saveResponse.text();
-              if (textBody && textBody.length < 500)
-                errorMsg += `. Response: ${textBody}`;
-            } catch (textErr) {
-              // should be fine to fail silently
-              console.warn("Could not read response body:", textErr);
+      if (savePatientInfo) {
+        const transformedData = {};
+        for (const camelCaseKey in manualData) {
+          const schemaKey = manualToSchemaMapping[camelCaseKey];
+          if (schemaKey) {
+            transformedData[schemaKey] = manualData[camelCaseKey];
+          } else {
+            if (
+              !["firstName", "lastName", "FirstName", "LastName"].includes(
+                camelCaseKey
+              )
+            ) {
+              console.warn(
+                `No schema mapping found for state key: ${camelCaseKey}. Not included in save data.`
+              );
             }
           }
-          console.error("Save Error:", errorMsg, "Response Body:", errorBody);
+        }
+
+        console.log("Extra data:", extraData);
+
+        const recordToSave = {
+          patientId,
+          firstName,
+          lastName,
+          ...transformedData,
+          predictionType: predictedValue,
+          predictionDetails: extraData,
+        };
+
+        console.log(
+          "Attempting to save record (with Schema Keys):",
+          recordToSave
+        );
+
+        try {
+          console.log("Attempting to save record via Axios instance...");
+
+          const saveResponse = await axiosInstance.post(
+            "/api/upload/single",
+            recordToSave
+          );
+
+          const saveResult = saveResponse.data;
+          console.log(
+            "Patient record saved successfully (Status:",
+            saveResponse.status,
+            "):",
+            saveResult?.doc
+          );
+          saveSuccess = true;
+        } catch (error) {
+          saveSuccess = false;
+          console.error("Error submitting patient record:", error);
+
+          let errorMsg = "An unknown error occurred while saving the record.";
+          let errorDetailsForLog = null;
+
+          if (error.response) {
+            const statusCode = error.response.status;
+            const errorData = error.response.data;
+            errorDetailsForLog = errorData;
+
+            errorMsg = `Failed to save patient record. Status: ${statusCode}`;
+
+            if (errorData) {
+              if (
+                typeof errorData === "object" &&
+                errorData !== null &&
+                errorData.message
+              ) {
+                errorMsg = errorData.message;
+              } else if (
+                typeof errorData === "string" &&
+                errorData.length < 500
+              ) {
+                errorMsg += `. Response: ${errorData}`;
+              }
+            }
+            console.error(
+              "Save Error:",
+              errorMsg,
+              "Response Body:",
+              errorDetailsForLog
+            );
+          } else if (error.request) {
+            console.error("Save failed: No response received.", error.request);
+            errorMsg =
+              "Could not connect to the server. Please check connection or contact support.";
+            console.error("Save Error:", errorMsg, "Response Body:", null);
+          } else {
+            console.error(
+              "Save failed: Error setting up request.",
+              error.message
+            );
+            errorMsg = `An error occurred before sending the request: ${error.message}`;
+            console.error("Save Error:", errorMsg, "Response Body:", null);
+          }
+
           setModalMessage(
             `Prediction complete but failed to save record: ${errorMsg}`
           );
           setModalOpen(true);
-        } else {
-          const saveResult = await saveResponse.json();
-          console.log("Patient record saved successfully:", saveResult.doc);
-          saveSuccess = true;
         }
-      } catch (saveError) {
-        console.error("Error submitting patient record:", saveError);
-        setModalMessage(
-          `Prediction successful, but encountered an error saving the record: ${saveError.message}. Please check connection or contact support.`
+      } else {
+        console.log(
+          "User opted not to save patient information. Skipping save step."
         );
-        setModalOpen(true);
+        saveSuccess = true;
       }
 
       if (saveSuccess) {
@@ -378,60 +401,82 @@ export default function DiagnosisPage() {
       )}
 
       <div className="col-span-1 md:col-span-2 space-y-6">
-        <Card title="Patient Information">
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="patientId"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Patient ID (Auto-generated)
-              </label>
+        {user && (
+          <Card title="Patient Information">
+            <div className="flex items-center mb-4">
               <input
-                type="text"
-                id="patientId"
-                name="patientId"
-                value={patientId}
-                readOnly
-                className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                First Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={firstName}
-                onChange={handleNameChange}
-                className={inputClass("firstName")}
+                id="savePatientInfoToggle"
+                name="savePatientInfoToggle"
+                type="checkbox"
+                checked={savePatientInfo}
+                onChange={(e) => setSavePatientInfo(e.target.checked)}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 disabled={isLoading}
               />
-            </div>
-            <div>
               <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="savePatientInfoToggle"
+                className="ml-2 block text-sm text-gray-900"
               >
-                Last Name <span className="text-red-500">*</span>
+                Save Patient Information
               </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={lastName}
-                onChange={handleNameChange}
-                className={inputClass("lastName")}
-                disabled={isLoading}
-              />
             </div>
-          </div>
-        </Card>
+
+            {savePatientInfo && (
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="patientId"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Patient ID (Auto-generated)
+                  </label>
+                  <input
+                    type="text"
+                    id="patientId"
+                    name="patientId"
+                    value={patientId}
+                    readOnly
+                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="firstName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    First Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={firstName}
+                    onChange={handleNameChange}
+                    className={inputClass("firstName")}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="lastName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={lastName}
+                    onChange={handleNameChange}
+                    className={inputClass("lastName")}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
 
         <FileUploadCard
           onFileProcessed={handleFileProcessed}

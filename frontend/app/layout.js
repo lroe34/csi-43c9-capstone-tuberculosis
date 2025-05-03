@@ -1,4 +1,5 @@
 import { Mulish } from "next/font/google";
+import { AuthProvider } from "@/context/authContext.js";
 import "./globals.css";
 
 const mulish = Mulish({
@@ -15,7 +16,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${mulish.variable} antialiased`}>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

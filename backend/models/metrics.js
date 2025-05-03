@@ -6,6 +6,8 @@ const MetricsSchema = new mongoose.Schema(
     firstName: { type: String, default: null },
     lastName: { type: String, default: null },
 
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
     Recurrent: { type: String },
     Gender: { type: String },
     Age: { type: Number },
@@ -34,8 +36,8 @@ const MetricsSchema = new mongoose.Schema(
     "Patient final type decided": { type: String },
     "Subserotype type": { type: String },
     "TB Type": { type: String },
-    "predictionType": { type: String },
-    "predictionDetail": { type: String },
+    predictionType: { type: String },
+    predictionDetails: { type: Object },
   },
   { timestamps: true }
 );

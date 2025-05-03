@@ -15,6 +15,7 @@ export default function Header() {
     "/results": "Results",
     "/search": "Search",
     "/home": "Home",
+    "/delete-request": "Delete Request",
   };
   const title = pageTitles[pathname] || "App";
 
