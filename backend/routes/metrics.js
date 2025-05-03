@@ -7,6 +7,8 @@ const { protect } = require("../middleware/authMiddleware");
 router.get("/search", protect, async (req, res) => {
   console.log("Received request with query:", req.query);
   const { name } = req.query;
+  const userId = req.user._id;
+
   if (!name) {
     return res
       .status(400)
@@ -16,6 +18,7 @@ router.get("/search", protect, async (req, res) => {
   try {
     const regex = new RegExp(name, "i");
     const results = await Metrics.find({
+      userId: userId,
       $or: [{ firstName: regex }, { lastName: regex }],
     });
 
@@ -29,9 +32,10 @@ router.get("/search", protect, async (req, res) => {
 router.get("/recent", protect, async (req, res) => {
   const { limit } = req.query;
   const queryLimit = parseInt(limit) || 10;
+  const userId = req.user._id;
 
   try {
-    const results = await Metrics.find()
+    const results = await Metrics.find({ userId })
       .sort({ timestamp: -1 })
       .limit(queryLimit);
 

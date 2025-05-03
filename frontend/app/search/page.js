@@ -20,7 +20,7 @@ export default function Search() {
 
   const { user, isLoading: isAuthLoading } = useAuth();
 
-  const isAuthorized = !isAuthLoading && user && user.isDoctor;
+  const isAuthorized = !isAuthLoading && user;
 
   const handleSearch = async () => {
     if (!isAuthorized) {

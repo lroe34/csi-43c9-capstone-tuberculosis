@@ -28,19 +28,14 @@ export default function Home() {
 
   useEffect(() => {
     const fetchRecentScans = async () => {
-      if (!user || !user.isDoctor) {
-        console.log(
-          "Home: User is not a doctor or not logged in. Aborting scan fetch."
-        );
+      if (!user) {
         setErrorScans(
-          "Access denied. You must be a logged-in doctor to view this page."
+          "Access denied. You must be logged-in to view this page."
         );
         setIsLoadingScans(false);
 
         return;
       }
-
-      console.log("Home: User is a doctor, attempting to fetch scans...");
       setIsLoadingScans(true);
       setErrorScans(null);
       try {
@@ -145,7 +140,7 @@ export default function Home() {
     return <LoadingState />;
   }
 
-  if (!user || !user.isDoctor) {
+  if (!user) {
     return <AccessDeniedMessage featureName="home functionality" />;
   }
   return (

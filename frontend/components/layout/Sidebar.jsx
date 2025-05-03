@@ -39,9 +39,9 @@ const Sidebar = () => {
             item.path !== "/delete-request"
           );
         }
-        if (!user || !user.isDoctor) {
-          return item.path !== "/home" && item.path !== "/search";
-        }
+        // if (!user || !user.isDoctor) {
+        //   return item.path !== "/home" && item.path !== "/search";
+        // }
         return true;
       });
 
