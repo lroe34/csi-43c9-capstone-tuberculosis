@@ -42,4 +42,19 @@ router.get("/recent", protect, async (req, res) => {
   }
 });
 
+router.delete("/delete/:id", protect, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await Metrics.findByIdAndDelete(id);
+    if (!result) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+    res.status(200).json({ message: "Data deleted successfully" });
+  } catch (error) {
+    console.error("Delete error:", error);
+    res.status(500).json({ message: "Error deleting data", error });
+  }
+});
+
 module.exports = router;

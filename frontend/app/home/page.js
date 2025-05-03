@@ -10,6 +10,8 @@ import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 import AccessDeniedMessage from "@/components/AccessDenied";
 import LoadingState from "@/components/LoadingState";
+import { TrashIcon } from "@heroicons/react/24/outline";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
@@ -20,6 +22,9 @@ export default function Home() {
   const [errorScans, setErrorScans] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [scanIdToDelete, setScanIdToDelete] = useState(null);
 
   useEffect(() => {
     const fetchRecentScans = async () => {
@@ -98,6 +103,31 @@ export default function Home() {
     }
   };
 
+  const handleDelete = (scanId, event) => {
+    event.stopPropagation();
+    setScanIdToDelete(scanId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const proceedWithDelete = async () => {
+    if (!scanIdToDelete) return;
+
+    try {
+      const response = await axiosInstance.delete(
+        `/api/metrics/delete/${scanIdToDelete}`
+      );
+      console.log("Delete response:", response.data);
+      setScans((prevScans) =>
+        prevScans.filter((scan) => scan._id !== scanIdToDelete)
+      );
+      setIsConfirmModalOpen(false);
+    } catch (error) {
+      console.error("Failed to delete scan:", error);
+    } finally {
+      setScanIdToDelete(null);
+    }
+  };
+
   const renderSkeletons = () => {
     return Array.from({ length: 6 }).map((_, idx) => (
       <div
@@ -134,36 +164,56 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {scans.map((scan) => (
-              <motion.div
-                key={scan._id || scan.id}
-                whileHover={{ y: -4 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => handleViewDetails(scan)}
-                className="p-4 border rounded-lg shadow cursor-pointer transition-shadow hover:shadow-lg space-y-1.5 bg-white"
-              >
-                <h3 className="text-lg font-medium text-gray-800 truncate">
-                  {scan.firstName || "N/A"} {scan.lastName || ""}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Scan Result:{" "}
-                  <span className="font-semibold">
-                    {predictionMapping[scan.predictionType] ?? "N/A"}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  Date: {formatDate(scan.createdAt)}
-                </p>
-              </motion.div>
+              <div key={scan._id || scan.id} className="relative group">
+                <motion.div
+                  whileHover={{ y: -4 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleViewDetails(scan)}
+                  className="p-4 border rounded-lg shadow cursor-pointer transition-shadow hover:shadow-lg space-y-1.5 bg-white h-full"
+                >
+                  <h3 className="text-lg font-medium text-gray-800 truncate pr-8">
+                    {scan.firstName || "N/A"} {scan.lastName || ""}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Scan Result:{" "}
+                    <span className="font-semibold">
+                      {predictionMapping[scan.predictionType] ?? "N/A"}
+                    </span>
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Date: {formatDate(scan.createdAt)}
+                  </p>
+                </motion.div>
+                <button
+                  onClick={(e) => handleDelete(scan._id, e)}
+                  title="Delete Scan Record"
+                  aria-label="Delete Scan Record"
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 
+                    hover:bg-red-200 hover:text-red-800 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 
+                    focus-visible:ring-red-500 focus-visible:ring-offset-1 transition-opacity duration-200 ease-in-out"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </button>
+              </div>
             ))}
           </div>
         )}
       </Card>
-
       <PatientDetailsModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         patientData={selectedPatient}
       />
+      <ConfirmModal
+        open={isConfirmModalOpen}
+        setOpen={setIsConfirmModalOpen}
+        title="Confirm Deletion"
+        message={`Are you sure you want to permanently delete the scan record? This action cannot be undone.`}
+        onConfirm={proceedWithDelete}
+        confirmButtonText="Delete"
+        cancelButtonText="Cancel"
+        variant="info"
+      />{" "}
     </section>
   );
 }
