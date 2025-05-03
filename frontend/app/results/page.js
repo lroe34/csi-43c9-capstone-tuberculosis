@@ -99,10 +99,9 @@ function ResultsContent() {
     <div className="max-w-3xl mx-auto p-6 md:p-8 space-y-6 bg-white rounded-lg shadow-lg my-8">
       <Card title="Prediction Outcome">
         <div className="p-4">
-          {" "}
           <p
             className={`
-             text-xl md:text-2xl font-semibold leading-tight
+             text-base md:text-lg text-gray-800 leading-relaxed
              ${predictionParam === "3" ? "text-green-700" : ""}
              ${
                predictionParam === "1" || predictionParam === "2"
@@ -130,7 +129,6 @@ function ResultsContent() {
 
       <Card title="Resistance Details">
         <div className="p-4">
-          {" "}
           <p
             className={`
              text-base md:text-lg text-gray-800 leading-relaxed

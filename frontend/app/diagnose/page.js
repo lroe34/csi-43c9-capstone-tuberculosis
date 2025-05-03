@@ -495,7 +495,7 @@ export default function DiagnosisPage() {
       <div className="col-span-1">
         <Card title="Instructions">
           <p className="text-gray-600">
-            Please fill in the required fields and upload a CSV file with the
+            Please fill in the required fields or upload a CSV file with the
             patient's medical data. The system will process the data and provide
             a diagnosis.
           </p>

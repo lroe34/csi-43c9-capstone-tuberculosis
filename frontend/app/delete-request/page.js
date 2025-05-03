@@ -109,10 +109,9 @@ export default function DeleteRequestPage() {
       <Card title="Request Data Deletion">
         <div className="p-4 md:p-6 space-y-6">
           <p className="text-sm text-gray-700">
-            You are about to request the permanent deletion of all data
-            associated with your account ({user.email}). This includes patient
-            records, scan results, and any other information linked to your user
-            profile.
+            You are about to request the permanent deletion of your account (
+            {user.email})and all associated data. This includes patient records,
+            scan results, and any other information linked to your user profile.
           </p>
           <p className="text-sm font-semibold text-red-600">
             This action is irreversible. Once deleted, your data cannot be
