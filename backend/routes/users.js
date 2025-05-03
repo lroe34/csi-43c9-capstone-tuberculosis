@@ -8,7 +8,7 @@ const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.post("/signup", async (req, res) => {
-  const { fullName, email, password, confirmPassword } = req.body;
+  const { fullName, email, password, confirmPassword, isDoctor } = req.body;
 
   if (password !== confirmPassword) {
     return res.status(400).json({ message: "Passwords do not match" });
@@ -26,6 +26,7 @@ router.post("/signup", async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
+      isDoctor
     });
 
     await newUser.save();
