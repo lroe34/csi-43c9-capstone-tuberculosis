@@ -5,15 +5,26 @@ const cors = require("cors");
 const usersRoute = require("./routes/users");
 const uploadRoute = require("./routes/upload");
 const metricsRoute = require("./routes/metrics");
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 dotenv.config();
 
 const app = express();
 
+app.use((req, res, next) => {
+  console.log(
+    `[Raw Request Received] Method: ${req.method}, URL: ${req.originalUrl}`
+  );
+  console.log(
+    "[Raw Request Received] Cookie Header:",
+    req.headers["cookie"] || "Not Present"
+  );
+  next();
+});
+
 app.use(cookieParser());
 app.use(express.json());
 
-const allowedOrigins = process.env.FRONTEND_URL || 'http://localhost:3000';
+const allowedOrigins = process.env.FRONTEND_URL || "http://localhost:3000";
 console.log(`CORS Allowed Origins: ${allowedOrigins}`);
 
 app.use(
@@ -21,7 +32,14 @@ app.use(
     origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // pls cooperate wth me :(
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Cookie",
+    ],
   })
 );
 
