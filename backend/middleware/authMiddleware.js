@@ -4,7 +4,7 @@ const User = require("../models/user");
 const protect = async (req, res, next) => {
   let token;
 
-  console.log("Request Headers:", req.headers);
+  console.log('[Protect Middleware] Cookies Received:', req.cookies);
 
   if (req.cookies && req.cookies.authToken) {
     token = req.cookies.authToken;
