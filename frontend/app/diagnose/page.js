@@ -15,13 +15,14 @@ import {
 } from "@/utils/columnMappings";
 import axiosInstance from "@/utils/api";
 import createSingleResistanceData from "@/utils/createSingleResistanceData.js";
-
+import { useAuth } from "@/context/authContext";
 const generatePatientId = () => {
   return `PER-${uuidv4()}`;
 };
 
 export default function DiagnosisPage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [patientId, setPatientId] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -49,6 +50,12 @@ export default function DiagnosisPage() {
   useEffect(() => {
     setPatientId(generatePatientId());
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setSavePatientInfo(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!savePatientInfo) {
@@ -394,80 +401,82 @@ export default function DiagnosisPage() {
       )}
 
       <div className="col-span-1 md:col-span-2 space-y-6">
-        <Card title="Patient Information">
-          <div className="flex items-center mb-4">
-            <input
-              id="savePatientInfoToggle"
-              name="savePatientInfoToggle"
-              type="checkbox"
-              checked={savePatientInfo}
-              onChange={(e) => setSavePatientInfo(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              disabled={isLoading}
-            />
-            <label
-              htmlFor="savePatientInfoToggle"
-              className="ml-2 block text-sm text-gray-900"
-            >
-              Save Patient Information
-            </label>
-          </div>
-
-          {savePatientInfo && (
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="patientId"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Patient ID (Auto-generated)
-                </label>
-                <input
-                  type="text"
-                  id="patientId"
-                  name="patientId"
-                  value={patientId}
-                  readOnly
-                  className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={firstName}
-                  onChange={handleNameChange}
-                  className={inputClass("firstName")}
-                  disabled={isLoading}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={lastName}
-                  onChange={handleNameChange}
-                  className={inputClass("lastName")}
-                  disabled={isLoading}
-                />
-              </div>
+        {user && (
+          <Card title="Patient Information">
+            <div className="flex items-center mb-4">
+              <input
+                id="savePatientInfoToggle"
+                name="savePatientInfoToggle"
+                type="checkbox"
+                checked={savePatientInfo}
+                onChange={(e) => setSavePatientInfo(e.target.checked)}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                disabled={isLoading}
+              />
+              <label
+                htmlFor="savePatientInfoToggle"
+                className="ml-2 block text-sm text-gray-900"
+              >
+                Save Patient Information
+              </label>
             </div>
-          )}
-        </Card>
+
+            {savePatientInfo && (
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="patientId"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Patient ID (Auto-generated)
+                  </label>
+                  <input
+                    type="text"
+                    id="patientId"
+                    name="patientId"
+                    value={patientId}
+                    readOnly
+                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="firstName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    First Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={firstName}
+                    onChange={handleNameChange}
+                    className={inputClass("firstName")}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="lastName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={lastName}
+                    onChange={handleNameChange}
+                    className={inputClass("lastName")}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
 
         <FileUploadCard
           onFileProcessed={handleFileProcessed}
