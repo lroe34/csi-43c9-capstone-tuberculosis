@@ -37,7 +37,7 @@ const MetricsSchema = new mongoose.Schema(
     "Subserotype type": { type: String },
     "TB Type": { type: String },
     predictionType: { type: String },
-    predictionDetail: { type: String },
+    predictionDetails: { type: Object },
   },
   { timestamps: true }
 );

@@ -4,98 +4,10 @@ import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Card from "@/components/Card";
 import {
-  drugMapping,
   predictionMapping,
   singleResistanceMapping,
 } from "@/utils/predictionMapping";
-
-function generateResistanceInfoFromRawPrediction(
-  rawPredictionArray,
-  predictionType
-) {
-  console.log(
-    "Raw prediction array in generateResistance:",
-    rawPredictionArray
-  );
-
-  const drugKeys = Object.keys(drugMapping);
-  const resistantDrugs = [];
-
-  if (predictionType === "multi") {
-    if (
-      drugKeys.length >= 2 &&
-      drugMapping[drugKeys[0]] &&
-      drugMapping[drugKeys[1]]
-    ) {
-      resistantDrugs.push(drugMapping[drugKeys[0]]);
-      resistantDrugs.push(drugMapping[drugKeys[1]]);
-    } else {
-      console.warn("Could not find mappings for the first two default drugs.");
-    }
-
-    for (let i = 0; i < rawPredictionArray.length; i++) {
-      const flag = rawPredictionArray[i];
-      const drugKeyIndex = i + 2;
-      if (drugKeyIndex < drugKeys.length) {
-        const drugKey = drugKeys[drugKeyIndex];
-        if (flag === 1 && drugMapping[drugKey]) {
-          if (!resistantDrugs.includes(drugMapping[drugKey])) {
-            resistantDrugs.push(drugMapping[drugKey]);
-          }
-        } else if (flag === 1) {
-          console.warn(`Drug mapping not found for key: ${drugKey}`);
-        }
-      } else {
-        console.warn(`Drug key index ${drugKeyIndex} out of bounds.`);
-      }
-    }
-  } else if (predictionType === "poly") {
-    let addedFirstDrug = false;
-    if (rawPredictionArray[0] === 1 && drugMapping[drugKeys[1]]) {
-      resistantDrugs.push(drugMapping[drugKeys[1]]);
-      addedFirstDrug = true;
-    } else if (rawPredictionArray[0] === 0 && drugMapping[drugKeys[0]]) {
-      resistantDrugs.push(drugMapping[drugKeys[0]]);
-      addedFirstDrug = true;
-    } else {
-      console.warn(
-        "Invalid flag or missing mapping for index 0/1 in poly mode."
-      );
-    }
-
-    for (let i = 1; i < rawPredictionArray.length; i++) {
-      const flag = rawPredictionArray[i];
-      const drugKeyIndex = i + 1;
-      if (drugKeyIndex < drugKeys.length) {
-        const drugKey = drugKeys[drugKeyIndex];
-        const drugName = drugMapping[drugKey];
-        if (flag === 1 && drugName) {
-          const isFirstOrSecondDrug =
-            drugKey === drugKeys[0] || drugKey === drugKeys[1];
-          if (
-            !isFirstOrSecondDrug ||
-            !addedFirstDrug ||
-            !resistantDrugs.includes(drugName)
-          ) {
-            if (!resistantDrugs.includes(drugName)) {
-              resistantDrugs.push(drugName);
-            }
-          }
-        } else if (flag === 1) {
-          console.warn(`Drug mapping not found for key: ${drugKey}`);
-        }
-      } else {
-        console.warn(`Drug key index ${drugKeyIndex} out of bounds.`);
-      }
-    }
-  }
-
-  if (resistantDrugs.length > 0) {
-    return "Drugs you are resistant to: " + resistantDrugs.join(", ");
-  } else {
-    return "Resistance pattern identified, but specific drug mappings are unavailable or none apply based on flags.";
-  }
-}
+import generateResistanceInfoFromRawPrediction from "@/utils/generateResistanceInfoFromRawPrediction";
 
 function ResultsContent() {
   const searchParams = useSearchParams();
@@ -210,7 +122,7 @@ function ResultsContent() {
           )}
           {predictionParam === "3" && (
             <p className="text-sm text-gray-600 mt-1">
-              Susceptible to tested drugs.
+              Not susceptible to tested drugs.
             </p>
           )}
         </div>

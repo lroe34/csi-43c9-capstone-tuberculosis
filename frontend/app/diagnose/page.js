@@ -228,51 +228,6 @@ export default function DiagnosisPage() {
         finalResult = { ...finalResult, ...additionalResult };
       }
 
-      //TODO: need to test this with the new models
-      let calculatedTbType = "Unknown";
-      let calculatedAdditionalInfo = "N/A";
-
-      switch (String(predictedValue)) {
-        case "0":
-          calculatedTbType = "No Resistance Detected / Single Resistance";
-          if (finalResult?.specific_drugs?.length > 0) {
-            calculatedAdditionalInfo = `Resistant to: ${finalResult.specific_drugs.join(
-              ", "
-            )}`;
-            if (finalResult.specific_drugs.length === 1)
-              calculatedTbType = "Single Drug Resistance";
-          } else {
-            calculatedAdditionalInfo =
-              finalResult?.message ||
-              "No resistance detected or specific drug info unavailable.";
-          }
-          break;
-        case "1":
-          calculatedTbType = "Multi-Drug Resistance";
-          calculatedAdditionalInfo = finalResult?.message || "";
-          if (
-            finalResult?.resistant_drugs &&
-            Array.isArray(finalResult.resistant_drugs)
-          ) {
-            calculatedAdditionalInfo += ` Detected resistance: ${finalResult.resistant_drugs.join(
-              ", "
-            )}`;
-          }
-          break;
-        case "2":
-          calculatedTbType = "Poly-Drug Resistance";
-          calculatedAdditionalInfo = finalResult?.message || "";
-          if (
-            finalResult?.resistant_drugs &&
-            Array.isArray(finalResult.resistant_drugs)
-          ) {
-            calculatedAdditionalInfo += ` Detected resistance: ${finalResult.resistant_drugs.join(
-              ", "
-            )}`;
-          }
-          break;
-      }
-
       let saveSuccess = false;
 
       if (savePatientInfo) {
@@ -294,14 +249,15 @@ export default function DiagnosisPage() {
           }
         }
 
+        console.log("Extra data:", extraData);
+
         const recordToSave = {
           patientId,
           firstName,
           lastName,
           ...transformedData,
           predictionType: predictedValue,
-          predictionDetails: finalResult,
-          "TB Type": calculatedTbType,
+          predictionDetails: extraData,
         };
 
         console.log(

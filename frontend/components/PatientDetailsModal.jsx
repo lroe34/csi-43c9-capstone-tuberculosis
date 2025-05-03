@@ -2,13 +2,14 @@
 
 import React from "react";
 import Card from "./Card";
+import generateResistanceInfoFromRawPrediction from "@/utils/generateResistanceInfoFromRawPrediction";
+import { singleResistanceMapping } from "@/utils/predictionMapping";
 
 const getResistanceType = (patientData) => {
   console.log("Patient Data:", patientData);
   if (!patientData) return "N/A";
 
   const type = patientData.predictionType;
-  const details = patientData.predictionDetails;
 
   // TODO: add more details with the details thingy
   switch (String(type)) {
@@ -23,24 +24,6 @@ const getResistanceType = (patientData) => {
   }
 };
 
-const formatAdditionalDetails = (patientData) => {
-  if (!patientData) return null;
-  return (
-    <>
-      {patientData.predictionDetails && (
-        <div>
-          <h4 className="font-semibold mt-3 mb-1 text-sm text-gray-600">
-            Prediction Details:
-          </h4>
-          <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto">
-            {JSON.stringify(patientData.predictionDetails, null, 2)}
-          </pre>
-        </div>
-      )}
-    </>
-  );
-};
-
 export default function PatientDetailModal({ isOpen, onClose, patientData }) {
   if (!isOpen || !patientData) {
     return null;
@@ -52,8 +35,42 @@ export default function PatientDetailModal({ isOpen, onClose, patientData }) {
     }
   };
 
+  console.log("Patient Data in Modal:", patientData);
+  console.log("Prediction Details:", patientData.predictionDetails);
+
   const resistanceType = getResistanceType(patientData);
-  const additionalDetails = formatAdditionalDetails(patientData);
+  let sendableResistanceType = "";
+
+  if (resistanceType === "Single Resistance") {
+    sendableResistanceType = "single";
+    console.log("Single Resistance");
+  }
+  if (resistanceType === "Multi-Drug Resistance") {
+    sendableResistanceType = "multi";
+    console.log("Multi-Drug Resistance");
+  }
+  if (resistanceType === "Poly-Drug Resistance") {
+    sendableResistanceType = "poly";
+    console.log("Poly-Drug Resistance");
+  }
+  if (resistanceType === "None") {
+    console.log("No Resistance");
+  }
+
+  let additionalDetails = "";
+  if (resistanceType === "Single Resistance") {
+    additionalDetails =
+      singleResistanceMapping[patientData.predictionDetails.raw_prediction] !==
+      undefined
+        ? singleResistanceMapping[patientData.predictionDetails.raw_prediction]
+        : "Specific resistance type mapping not found for key: " +
+          patientData.predictionDetails.raw_prediction;
+  } else {
+    additionalDetails = generateResistanceInfoFromRawPrediction(
+      patientData.predictionDetails,
+      sendableResistanceType
+    );
+  }
 
   return (
     <div
