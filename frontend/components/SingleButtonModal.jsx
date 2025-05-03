@@ -44,7 +44,7 @@ export default function SingleButtonModal({
 
   return (
     <Transition show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={setOpen}>
+      <Dialog as="div" className="relative z-[60]" onClose={setOpen}>
         <TransitionChild
           as={Fragment}
           enter="transition ease-out duration-300"
