@@ -54,7 +54,11 @@ export default function LoginForm() {
       <h1 className="text-4xl font-semibold text-gray-800 mb-6 text-center">
         Login
       </h1>
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+      {error && (
+        <p className="w-full px-4 py-2 mb-2 border rounded-lg text-red-600 text-sm bg-red-100 border-red-300">
+          {error}
+        </p>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
