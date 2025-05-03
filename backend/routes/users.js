@@ -67,7 +67,7 @@ router.post("/login", async (req, res) => {
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
+      sameSite: "None",
       maxAge: 60 * 60 * 1000, // 1 hr in millis
       path: "/",
     });
@@ -91,7 +91,7 @@ router.post("/logout", (req, res) => {
     httpOnly: true,
     expires: new Date(0),
     secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax",
+    sameSite: "None",
     path: "/",
   });
   res.status(200).json({ message: "Logout successful" });
@@ -144,7 +144,7 @@ router.post("/request-deletion", protect, async (req, res) => {
       httpOnly: true,
       expires: new Date(0),
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
+      sameSite: "None",
       path: "/",
     });
 
