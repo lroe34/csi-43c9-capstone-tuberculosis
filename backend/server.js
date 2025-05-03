@@ -5,17 +5,19 @@ const cors = require("cors");
 const usersRoute = require("./routes/users");
 const uploadRoute = require("./routes/upload");
 const metricsRoute = require("./routes/metrics");
+const cookieParser = require('cookie-parser');
 dotenv.config();
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 
-const allowedOrigins = ["*"];
+const allowedOrigins = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 app.use(
   cors({
-    origin: "*",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // pls cooperate wth me :(
     allowedHeaders: ["Content-Type", "Authorization"],

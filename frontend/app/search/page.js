@@ -3,7 +3,10 @@
 import { useState } from "react";
 import Card from "@/components/Card";
 import PatientDetailsModal from "@/components/PatientDetailsModal";
-import API_URL from "../../utils/api";
+import { useAuth } from "@/context/authContext";
+import axiosInstance from "@/utils/api";
+import LoadingState from "@/components/LoadingState";
+import AccessDeniedMessage from "@/components/AccessDenied";
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,7 +18,16 @@ export default function Search() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
 
+  const { user, isLoading: isAuthLoading } = useAuth();
+
+  const isAuthorized = !isAuthLoading && user && user.isDoctor;
+
   const handleSearch = async () => {
+    if (!isAuthorized) {
+      setError("You are not authorized to perform searches.");
+      return;
+    }
+
     if (!searchQuery.trim()) {
       setError("Please enter a search term.");
       setResults([]);
@@ -29,49 +41,30 @@ export default function Search() {
     setSearchPerformed(true);
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/metrics/search?name=${encodeURIComponent(searchQuery)}`
-      );
-      const contentType = response.headers.get("content-type");
+      const response = await axiosInstance.get(`/api/metrics/search`, {
+        params: { name: searchQuery },
+      });
 
-      if (!response.ok) {
-        let errorText = `Error: ${response.status} ${response.statusText}`;
-        try {
-          // Attempt to figure out why im getting funky errors that cant be displayed normally
-          const bodyText = await response.text();
-          if (bodyText && bodyText.length < 500) {
-            if (bodyText.trim().startsWith("<")) {
-              errorText += ". Server returned HTML error page.";
-            } else {
-              errorText += `. Body: ${bodyText}`;
-            }
-          }
-        } catch (e) {
-          // I dont care
-        }
-        throw new Error(errorText);
-      }
-
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Error: Response received was not valid JSON.");
-      }
-
-      const data = await response.json();
-      console.log("Search results:", data);
+      console.log("Search results:", response.data);
+      const data = response.data;
 
       const resultsArray = Array.isArray(data) ? data : data ? [data] : [];
-
       setResults(resultsArray);
 
       if (resultsArray.length === 0) {
         setError("No results found matching your criteria.");
       }
     } catch (err) {
-      console.error("Search failed:", err);
-      setError(
-        err.message ||
-          "Failed to fetch search results. Check network or console logs."
-      );
+      console.error("Search failed:", err.response?.data || err.message || err);
+      let errorMsg = "Failed to fetch search results.";
+      if (err.response?.status === 401) {
+        errorMsg = "Authentication failed. Please log in again.";
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      setError(errorMsg);
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -93,6 +86,13 @@ export default function Search() {
     setIsModalOpen(false);
     setSelectedPatient(null);
   };
+
+  if (isAuthLoading) {
+    return <LoadingState />;
+  }
+  if (!isAuthorized) {
+    return <AccessDeniedMessage featureName="search functionality" />;
+  }
 
   return (
     <div className="p-6 flex flex-col space-y-6">

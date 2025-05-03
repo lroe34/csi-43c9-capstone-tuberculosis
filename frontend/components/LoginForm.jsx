@@ -2,28 +2,50 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import API_URL from "../utils/api.js";
+import { useAuth } from "../context/authContext.js";
+import axiosInstance from "../utils/api.js";
 
 export default function LoginForm() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
 
     try {
-      const response = await axios.post(`${API_URL}/api/users/login`, {
+      const response = await axiosInstance.post(`/api/users/login`, {
         email,
         password,
       });
 
       console.log("Login successful:", response.data);
-      router.push("/home");
-    } catch (error) {
-      console.error("Error during login", error.response?.data || error);
-      alert(error.response?.data?.message || "An error occurred");
+
+      const { user } = response.data;
+
+      if (user) {
+        login(user);
+
+        if (user.isDoctor) {
+          router.push("/home");
+        } else {
+          router.push("/diagnose");
+        }
+      } else {
+        throw new Error("Login response missing token or user data.");
+      }
+    } catch (err) {
+      console.error("Error during login", err.response?.data || err.message);
+      setError(
+        err.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      );
+      setIsSubmitting(false);
     }
   };
 
@@ -32,6 +54,7 @@ export default function LoginForm() {
       <h1 className="text-4xl font-semibold text-gray-800 mb-6 text-center">
         Login
       </h1>
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
@@ -39,6 +62,8 @@ export default function LoginForm() {
           className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={isSubmitting}
         />
         <input
           type="password"
@@ -46,26 +71,36 @@ export default function LoginForm() {
           className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
+          disabled={isSubmitting}
         />
         <button
           type="submit"
-          className="w-full bg-yellow-600 text-white py-2 rounded-lg font-semibold hover:bg-yellow-700 transition-all"
+          className={`w-full bg-yellow-600 text-white py-2 rounded-lg font-semibold hover:bg-yellow-700 transition-all ${
+            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={isSubmitting}
         >
-          Continue
+          {isSubmitting ? "Logging in..." : "Continue"}
         </button>
       </form>
       <div className="mt-4 text-center text-gray-600">
         <p>
           Don't have an account?{" "}
           <button
-            onClick={() => router.push("/signup")}
-            className="font-semibold"
+            onClick={() => !isSubmitting && router.push("/signup")}
+            className="font-semibold disabled:opacity-50"
+            disabled={isSubmitting}
           >
             Sign up
           </button>
         </p>
         <p className="mt-2">or</p>
-        <button onClick={() => router.push("/home")} className="font-semibold">
+        <button
+          onClick={() => !isSubmitting && router.push("/home")}
+          className="font-semibold"
+          disabled={isSubmitting}
+        >
           Continue as guest
         </button>
       </div>

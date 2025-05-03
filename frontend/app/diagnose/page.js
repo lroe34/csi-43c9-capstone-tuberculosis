@@ -13,7 +13,7 @@ import {
   fileToManualMapping,
   manualToSchemaMapping,
 } from "@/utils/columnMappings";
-import API_URL from "../../utils/api.js";
+import axiosInstance from "@/utils/api";
 import createSingleResistanceData from "@/utils/createSingleResistanceData.js";
 
 const generatePatientId = () => {
@@ -197,11 +197,16 @@ export default function DiagnosisPage() {
             createSingleResistanceData(manualData)
           );
           sendableFeaturesArray = singleResistanceFeatureArray;
-          console.log("Single Resistance Data:", createSingleResistanceData(manualData));
-          console.log("Single Resistance Feature Array:", singleResistanceFeatureArray);
-
+          console.log(
+            "Single Resistance Data:",
+            createSingleResistanceData(manualData)
+          );
+          console.log(
+            "Single Resistance Feature Array:",
+            singleResistanceFeatureArray
+          );
         } else {
-         sendableFeaturesArray = featuresArray;
+          sendableFeaturesArray = featuresArray;
         }
         const additionalResponse = await fetch(
           additionalEndpoints[predictedValue],
@@ -305,45 +310,71 @@ export default function DiagnosisPage() {
         );
 
         try {
-          const saveUrl = `${API_URL}/api/upload/single`;
-          console.log("Saving to URL:", saveUrl);
+          console.log("Attempting to save record via Axios instance...");
 
-          const saveResponse = await fetch(saveUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(recordToSave),
-          });
+          const saveResponse = await axiosInstance.post(
+            "/api/upload/single",
+            recordToSave
+          );
 
-          if (!saveResponse.ok) {
-            let errorMsg = `Failed to save patient record. Status: ${saveResponse.status}`;
-            let errorBody = null;
-            try {
-              errorBody = await saveResponse.json();
-              errorMsg = errorBody.message || errorMsg;
-            } catch (e) {
-              console.warn("Could not parse error response body:", e);
-              try {
-                const textBody = await saveResponse.text();
-                if (textBody && textBody.length < 500)
-                  errorMsg += `. Response: ${textBody}`;
-              } catch (textErr) {
-                console.warn("Could not read response body:", textErr);
+          const saveResult = saveResponse.data;
+          console.log(
+            "Patient record saved successfully (Status:",
+            saveResponse.status,
+            "):",
+            saveResult?.doc
+          );
+          saveSuccess = true;
+        } catch (error) {
+          saveSuccess = false;
+          console.error("Error submitting patient record:", error);
+
+          let errorMsg = "An unknown error occurred while saving the record.";
+          let errorDetailsForLog = null;
+
+          if (error.response) {
+            const statusCode = error.response.status;
+            const errorData = error.response.data;
+            errorDetailsForLog = errorData;
+
+            errorMsg = `Failed to save patient record. Status: ${statusCode}`;
+
+            if (errorData) {
+              if (
+                typeof errorData === "object" &&
+                errorData !== null &&
+                errorData.message
+              ) {
+                errorMsg = errorData.message;
+              } else if (
+                typeof errorData === "string" &&
+                errorData.length < 500
+              ) {
+                errorMsg += `. Response: ${errorData}`;
               }
             }
-            console.error("Save Error:", errorMsg, "Response Body:", errorBody);
-            setModalMessage(
-              `Prediction complete but failed to save record: ${errorMsg}`
+            console.error(
+              "Save Error:",
+              errorMsg,
+              "Response Body:",
+              errorDetailsForLog
             );
-            setModalOpen(true);
+          } else if (error.request) {
+            console.error("Save failed: No response received.", error.request);
+            errorMsg =
+              "Could not connect to the server. Please check connection or contact support.";
+            console.error("Save Error:", errorMsg, "Response Body:", null);
           } else {
-            const saveResult = await saveResponse.json();
-            console.log("Patient record saved successfully:", saveResult.doc);
-            saveSuccess = true;
+            console.error(
+              "Save failed: Error setting up request.",
+              error.message
+            );
+            errorMsg = `An error occurred before sending the request: ${error.message}`;
+            console.error("Save Error:", errorMsg, "Response Body:", null);
           }
-        } catch (saveError) {
-          console.error("Error submitting patient record:", saveError);
+
           setModalMessage(
-            `Prediction successful, but encountered an error saving the record: ${saveError.message}. Please check connection or contact support.`
+            `Prediction complete but failed to save record: ${errorMsg}`
           );
           setModalOpen(true);
         }
@@ -414,7 +445,7 @@ export default function DiagnosisPage() {
               name="savePatientInfoToggle"
               type="checkbox"
               checked={savePatientInfo}
-              onChange={(e) => setSavePatientInfo(e.target.checked)} 
+              onChange={(e) => setSavePatientInfo(e.target.checked)}
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               disabled={isLoading}
             />

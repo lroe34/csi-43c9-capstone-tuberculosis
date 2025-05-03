@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  isDoctor: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

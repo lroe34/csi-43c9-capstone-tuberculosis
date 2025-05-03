@@ -3,11 +3,18 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Card from "@/components/Card";
-import API_URL from "@/utils/api";
+import axiosInstance from "@/utils/api";
 import { predictionMapping } from "@/utils/predictionMapping";
 import PatientDetailsModal from "@/components/PatientDetailsModal";
+import { useAuth } from "@/context/authContext";
+import { useRouter } from "next/navigation";
+import AccessDeniedMessage from "@/components/AccessDenied";
+import LoadingState from "@/components/LoadingState";
 
 export default function Home() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
   const [scans, setScans] = useState([]);
   const [isLoadingScans, setIsLoadingScans] = useState(true);
   const [errorScans, setErrorScans] = useState(null);
@@ -16,24 +23,55 @@ export default function Home() {
 
   useEffect(() => {
     const fetchRecentScans = async () => {
+      if (!user || !user.isDoctor) {
+        console.log(
+          "Home: User is not a doctor or not logged in. Aborting scan fetch."
+        );
+        setErrorScans(
+          "Access denied. You must be a logged-in doctor to view this page."
+        );
+        setIsLoadingScans(false);
+
+        return;
+      }
+
+      console.log("Home: User is a doctor, attempting to fetch scans...");
       setIsLoadingScans(true);
       setErrorScans(null);
       try {
-        const response = await fetch(`${API_URL}/api/metrics/recent?limit=10`);
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        setScans(data);
+        const response = await axiosInstance.get(
+          "/api/metrics/recent?limit=10"
+        );
+        setScans(response.data);
       } catch (error) {
-        console.error("Failed to fetch recent scans:", error);
-        setErrorScans(error.message || "Failed to load scan data.");
+        console.error(
+          "Failed to fetch recent scans:",
+          error.response?.status,
+          error.response?.data || error.message
+        );
+        if (error.response?.status === 401) {
+          setErrorScans(
+            "Authentication failed or session expired. Please log in again."
+          );
+          // idk if this needs to be here
+          // logout();
+          // router.push('/login');
+        } else {
+          setErrorScans(
+            error.response?.data?.message || "Failed to load scan data."
+          );
+        }
       } finally {
         setIsLoadingScans(false);
       }
     };
 
-    fetchRecentScans();
-  }, []);
+    if (!isLoading) {
+      fetchRecentScans();
+    } else {
+      console.log("Home: Waiting for initial authentication check...");
+    }
+  }, [isLoading, user, router]);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -60,18 +98,26 @@ export default function Home() {
     }
   };
 
-  const renderSkeletons = () =>
-    Array.from({ length: 6 }).map((_, idx) => (
+  const renderSkeletons = () => {
+    return Array.from({ length: 6 }).map((_, idx) => (
       <div
         key={idx}
-        className="p-4 border rounded-lg shadow animate-pulse space-y-2"
+        className="p-4 border rounded-lg shadow animate-pulse space-y-2 bg-white"
       >
         <div className="h-4 w-1/3 bg-gray-200 rounded" />
         <div className="h-3 w-1/2 bg-gray-200 rounded" />
         <div className="h-3 w-2/5 bg-gray-200 rounded" />
       </div>
     ));
+  };
 
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (!user || !user.isDoctor) {
+    return <AccessDeniedMessage featureName="home functionality" />;
+  }
   return (
     <section className="container mx-auto p-6 flex flex-col gap-8">
       <Card title="Recent Scans" className="space-y-6">
@@ -80,9 +126,11 @@ export default function Home() {
             {renderSkeletons()}
           </div>
         ) : errorScans ? (
-          <p className="text-red-600">{errorScans}</p>
+          <p className="text-red-600 text-center p-4">{errorScans}</p>
         ) : scans.length === 0 ? (
-          <p className="text-gray-600">No recent scans found.</p>
+          <p className="text-gray-600 text-center p-4">
+            No recent scans found.
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {scans.map((scan) => (
@@ -91,18 +139,18 @@ export default function Home() {
                 whileHover={{ y: -4 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => handleViewDetails(scan)}
-                className="p-4 border rounded-lg shadow cursor-pointer transition-shadow hover:shadow-lg space-y-1.5"
+                className="p-4 border rounded-lg shadow cursor-pointer transition-shadow hover:shadow-lg space-y-1.5 bg-white"
               >
-                <h3 className="text-lg font-medium text-black-200 truncate">
-                  {scan.firstName} {scan.lastName || "Unknown"}
+                <h3 className="text-lg font-medium text-gray-800 truncate">
+                  {scan.firstName || "N/A"} {scan.lastName || ""}
                 </h3>
-                <p className="text-sm text-gray-600 text-gray-400">
+                <p className="text-sm text-gray-600">
                   Scan Result:{" "}
                   <span className="font-semibold">
-                    {predictionMapping[scan.predictionType] || "N/A"}
+                    {predictionMapping[scan.predictionType] ?? "N/A"}
                   </span>
                 </p>
-                <p className="text-sm text-gray-600 text-gray-400">
+                <p className="text-sm text-gray-600">
                   Date: {formatDate(scan.createdAt)}
                 </p>
               </motion.div>
