@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/utils/api";
-
+import SuccessToast from "./SuccessToast";
 const Signup = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -15,6 +15,8 @@ const Signup = () => {
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -45,8 +47,11 @@ const Signup = () => {
 
       console.log("Signup successful:", response.data);
 
-      alert("Signup successful! Please log in with your new account.");
-      router.push("/login");
+      setSuccessMessage("Signup successful! Redirecting to login...");
+      setShowSuccess(true);
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (err) {
       console.error(
         "Error during signup:",
@@ -215,6 +220,11 @@ const Signup = () => {
           </div>
         </div>
       </div>
+      <SuccessToast
+        message={successMessage}
+        show={showSuccess}
+        onClose={() => setShowSuccess(false)}
+      />
     </div>
   );
 };
