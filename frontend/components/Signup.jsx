@@ -207,7 +207,7 @@ const Signup = () => {
             </p>
             <p className="mt-2">or</p>
             <button
-              onClick={() => router.push("/home")}
+              onClick={() => router.push("/diagnose")}
               className="font-semibold"
             >
               Continue as guest

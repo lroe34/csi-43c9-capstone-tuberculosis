@@ -97,7 +97,7 @@ export default function LoginForm() {
         </p>
         <p className="mt-2">or</p>
         <button
-          onClick={() => !isSubmitting && router.push("/home")}
+          onClick={() => !isSubmitting && router.push("/diagnose")}
           className="font-semibold"
           disabled={isSubmitting}
         >
