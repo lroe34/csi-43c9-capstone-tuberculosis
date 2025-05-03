@@ -7,6 +7,7 @@ import {
   ArrowLeftEndOnRectangleIcon,
   BeakerIcon,
   ScaleIcon,
+  ArchiveBoxXMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/context/authContext";
 
@@ -15,6 +16,11 @@ const sidebarItems = [
   { name: "Search", icon: MagnifyingGlassIcon, path: "/search" },
   { name: "Diagnose", icon: ScaleIcon, path: "/diagnose" },
   { name: "Results", icon: BeakerIcon, path: "/results" },
+  {
+    name: "Delete Request",
+    icon: ArchiveBoxXMarkIcon,
+    path: "/delete-request",
+  },
 ];
 
 const Sidebar = () => {
@@ -26,6 +32,13 @@ const Sidebar = () => {
   const itemsToRender = isLoading
     ? []
     : sidebarItems.filter((item) => {
+        if (!user) {
+          return (
+            item.path !== "/home" &&
+            item.path !== "/search" &&
+            item.path !== "/delete-request"
+          );
+        }
         if (!user || !user.isDoctor) {
           return item.path !== "/home" && item.path !== "/search";
         }

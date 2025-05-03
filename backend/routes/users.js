@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Metric = require("../models/metrics");
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -104,6 +105,59 @@ router.get("/me", protect, async (req, res) => {
   } catch (error) {
     console.error("Error fetching user profile:", error);
     res.status(500).json({ message: "Server error fetching profile" });
+  }
+});
+
+router.post("/request-deletion", protect, async (req, res) => {
+  const { password } = req.body;
+  const userId = req.user._id;
+
+  if (!password) {
+    return res
+      .status(400)
+      .json({ message: "Password confirmation is required." });
+  }
+
+  try {
+    const userToDelete = await User.findById(userId);
+    if (!userToDelete) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const isMatch = await bcrypt.compare(password, userToDelete.password);
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ message: "Invalid password confirmation." });
+    }
+
+    console.log(`Deleting metrics associated with userId: ${userId}`);
+    const deleteMetricsResult = await Metric.deleteMany({ userId: userId });
+    console.log(`Deleted ${deleteMetricsResult.deletedCount} metric records.`);
+
+    console.log(`Deleting user account for userId: ${userId}`);
+    await User.findByIdAndDelete(userId);
+    console.log(`User account ${userId} deleted.`);
+
+    res.cookie("authToken", "", {
+      httpOnly: true,
+      expires: new Date(0),
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+      path: "/",
+    });
+
+    res
+      .status(200)
+      .json({
+        message:
+          "Your account and associated data have been successfully deleted.",
+      });
+  } catch (error) {
+    console.error("Error during data deletion request:", error);
+    res
+      .status(500)
+      .json({ message: "Server error processing your deletion request." });
   }
 });
 
