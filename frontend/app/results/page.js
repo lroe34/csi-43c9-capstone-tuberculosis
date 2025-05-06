@@ -159,7 +159,8 @@ function ResultsContent() {
       </Card>
 
       <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-200">
-        Report generated: {new Date().toLocaleString()}
+        Report generated: {new Date().toLocaleString()}. Results are not 100%
+        accurate.
       </div>
     </div>
   );
