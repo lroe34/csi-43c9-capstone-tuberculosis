@@ -4,6 +4,36 @@
 
 The website is available and deployed to **https://csi-43c9-capstone-tuberculosis-steel.vercel.app/**
 
+## Developer Docs
+### Prerequisites Requirements
+1. Node.js
+    - If Node.js is not already installed, install it by following the steps [here](https://nodejs.org/en/download) 
+2. Yarn
+    - If Yarn is not already installed, install it by following these steps [here](https://classic.yarnpkg.com/lang/en/docs/install/)
+    - Yarn is the desired package manager as it offers faster installation speeds, more reliable dependency management, and security enhancements. 
+### Running The Program
+1. Clone the repository
+2. Navigate to the backend folder using `cd backend`
+3. Install the backend dependencies with `yarn install`
+4. While still in the backend folder run, the following to start the local development instance `yarn dev`
+5. Navigate to the frontend folder using `cd ../frontend`
+6. Install the frontend dependencies with `yarn install`
+7. While still in the frontend folder, run the following command to start the frontend development instance `yarn dev`
+8. Navigate to http://localhost:3000 in your browser to view the local development instance. 
+
+### Accessing the Database
+To use features like Login, Signup, or Save data locally, you need to connect to the MongoDB database.
+1. Obtain the MongoDB URI from the MongoDB Atlas website following these steps [here](https://www.mongodb.com/docs/manual/reference/connection-string/).
+2. Create a `.env` file in your `/backend` directory
+3. Add the URI to the .env file, replacing <your-mongo-uri> with the actual URI `MONGO_URI=mongodb+srv://<your-mongo-uri>`
+
+*Note: Occasionally, the database requires you to specify an IP address you will be using the database from. To add your IP: 
+1. Navigate to the Network access tab and select Add IP Address. 
+2. Select the Add Current IP Address and optionally choose an expiration time. 
+
+
+
+
 ## How to use
 
 1. **Create an Account (Signup):** If you are a new user, start by signing up by clicking the sign up button. If you wish to stay anonymous, you may continue as guest.
@@ -77,6 +107,3 @@ access the service.
 - The guest view is unable to view the home and search pages. They also do not
 have access to save their results
 
-## Developer Docs
-Both frontend and backend use yarn. To run, use the command `yarn dev` in both the frontend and backend directories.
-- In order to use features such as login, signup, or save, it is necessary to locally have a mongoDB instance. In the `/backend` directory, create a `.env` file and assign your MongoDB URI to a variable there. It should resemble: `MONGO_URI=mongodb+srv://<your-mongo-uri>`
