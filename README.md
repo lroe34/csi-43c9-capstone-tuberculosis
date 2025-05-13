@@ -79,4 +79,4 @@ have access to save their results
 
 ## Developer Docs
 Both frontend and backend use yarn. To run, use the command `yarn dev` in both the frontend and backend directories.
-- In order to use features such as login, signup, or save, it is necessary to locally have a mongoDB instance. In the `/backend` directory, created a `.env` file and assign your MongoDB URI to a variable there. It should resemble: `MONGO_URI=mongodb+srv://<your-mongo-uri>`
+- In order to use features such as login, signup, or save, it is necessary to locally have a mongoDB instance. In the `/backend` directory, create a `.env` file and assign your MongoDB URI to a variable there. It should resemble: `MONGO_URI=mongodb+srv://<your-mongo-uri>`
