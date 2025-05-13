@@ -1,7 +1,7 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/Header";
 
-export default function HomeLayout({ children }) {
+export default function DeleteRequestLayout({ children }) {
   return (
     <div className="min-h-screen">
       <Sidebar />
@@ -13,5 +13,4 @@ export default function HomeLayout({ children }) {
       </div>
     </div>
   );
-
 }

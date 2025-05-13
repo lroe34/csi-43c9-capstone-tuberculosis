@@ -14,8 +14,8 @@ export default function Header() {
     "/diagnose": "Diagnosis Tool",
     "/results": "Results",
     "/search": "Search",
-    "/settings": "Settings",
     "/home": "Home",
+    "/delete-request": "Delete Request",
   };
   const title = pageTitles[pathname] || "App";
 
